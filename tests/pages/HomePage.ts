@@ -48,22 +48,41 @@ export class HomePage {
     this.diveIntoSolarSection = page.locator('section').filter({ hasText: /dive into solar/i }).first();
     this.footer = page.locator('footer').first();
 
-    // These four sections were renamed in the 2026 rebrand.
-    this.weAreEverywhereSection = page.locator('section').filter({ hasText: /nationwide reach/i }).first();
-    this.goSolarStepsSection = page.locator('section').filter({ hasText: /360 path to energy/i }).first();
-    this.featuredProductsSection = page.locator('section').filter({ hasText: /360 portfolio/i }).first();
+    // These four sections were renamed in the 2026 rebrand and are now rendered as
+    // <div> containers (not <section> tags). Target direct children of inner <main>
+    // to avoid matching deeply-nested descendants with the same text.
+    this.weAreEverywhereSection = page.locator('main > main > :is(section, div)').filter({ hasText: /nationwide reach/i }).first();
+    this.goSolarStepsSection = page.locator('main > main > :is(section, div)').filter({ hasText: /360 path to energy/i }).first();
+    this.featuredProductsSection = page.locator('main > main > :is(section, div)').filter({ hasText: /360 portfolio/i }).first();
     // "Frequently Asked Questions" section was replaced by a product-finder section.
-    this.faqSection = page.locator('section').filter({ hasText: /find the right solar/i }).first();
+    this.faqSection = page.locator('main > main > :is(section, div)').filter({ hasText: /find the right solar/i }).first();
   }
 
   async goto(): Promise<void> {
     await this.page.goto('/', { waitUntil: 'domcontentloaded' });
-    // Firefox keeps analytics/polling requests open indefinitely so networkidle
-    // never fires; fall back to a short settled-render wait instead.
+    // networkidle fires quickly on Chromium/WebKit; Firefox keeps analytics and
+    // polling connections open indefinitely so networkidle never fires there.
+    // Cap the wait at 8 s — SSR content is visible well before that — then
+    // fall back to a short settled-render pause so we don't waste ~30 s per
+    // Firefox test (which would crowd out the lazy-load and scroll budget).
     try {
-      await this.page.waitForLoadState('networkidle', { timeout: 30_000 });
+      await this.page.waitForLoadState('networkidle', { timeout: 8_000 });
     } catch {
       await this.page.waitForTimeout(2_000);
+    }
+    // The page is fully client-rendered (Next.js): the SSR HTML only contains
+    // the nav and a hidden H1. Wait for the hero <section> to appear as a
+    // reliable signal that the JavaScript bundle has loaded and React has
+    // hydrated — without this, fast-firing tests (especially the first Firefox
+    // test, whose JS bundle competes with the parallel Chromium test over
+    // bandwidth) would scroll through a skeleton DOM and never find any content.
+    await this.page.locator('section').first().waitFor({ timeout: 30_000 }).catch(() => {});
+    // Dismiss cookie consent banner so it does not block scroll events or gate
+    // the rendering of cookie-gated page sections (particularly in Chromium).
+    try {
+      await this.page.getByRole('button', { name: /got it/i }).click({ timeout: 3_000 });
+    } catch {
+      // Banner absent or already dismissed — continue.
     }
     await freezeAnimations(this.page);
   }
@@ -75,6 +94,22 @@ export class HomePage {
   }
 
   async scrollToSection(locator: Locator): Promise<void> {
+    // If the section is absent from the DOM (unmounted by IntersectionObserver after
+    // triggerLazyLoad scrolled back to the top), re-trigger lazy loading by scrolling
+    // incrementally from the top until the element appears.
+    if (await locator.count() === 0) {
+      const scrollHeight = await this.page.evaluate(() => document.body.scrollHeight);
+      await this.page.evaluate(() => window.scrollTo(0, 0));
+      for (let y = 600; y <= scrollHeight && await locator.count() === 0; y += 600) {
+        await this.page.evaluate((pos) => window.scrollTo(0, pos), y);
+        await this.page.waitForTimeout(500);
+      }
+    }
+    // Wait for the element to be in the DOM before scrolling into view.
+    // On Firefox's first cold-cache load the section's async content (text fetched
+    // from an API after IntersectionObserver fires) may not have arrived yet even
+    // after triggerLazyLoad + networkidle. A generous 30-s window covers this.
+    await locator.waitFor({ state: 'attached', timeout: 30_000 });
     // Use evaluate to bypass Playwright's actionability check — elements inside
     // overflow:hidden carousels are in the DOM but not "actionable", causing
     // scrollIntoViewIfNeeded to time out.

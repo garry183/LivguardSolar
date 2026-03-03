@@ -25,13 +25,16 @@ export async function triggerLazyLoad(page: Page): Promise<void> {
         totalHeight += distance;
         if (totalHeight >= document.body.scrollHeight) {
           clearInterval(timer);
-          window.scrollTo(0, 0);
+          // Do NOT scroll back to top: sections mounted by IntersectionObserver
+          // will unmount if the page returns to the top before scrollToSection
+          // can find them. Keeping the scroll position near the bottom ensures
+          // all sections remain in the DOM for the subsequent scrollToSection call.
           resolve();
         }
-      }, 80);
+      }, 500);
     });
   });
-  await page.waitForTimeout(500);
+  await page.waitForTimeout(1000);
 }
 
 /** Wait for all images matching selector to finish loading. */

@@ -73,6 +73,12 @@ test.describe('Homepage – Full-page snapshots', () => {
 
 test.describe('Homepage – Section snapshots', () => {
   test.beforeEach(async ({ homePage }) => {
+    // Firefox keeps long-lived analytics connections open so networkidle never
+    // fires, costing up to 30 s in goto(). The lazy-load scroll adds another
+    // ~22 s, the 5-s networkidle cap in prepareForSnapshot adds up to 5 s, and
+    // the 30-s waitFor in scrollToSection covers slow async section content on the
+    // first cold-cache Firefox run (bandwidth contention with parallel Chromium).
+    test.setTimeout(120_000);
     await homePage.prepareForSnapshot();
   });
 
