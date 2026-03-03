@@ -1,0 +1,11 @@
+node_modules/
+dist/
+reports/test-results/
+reports/html/
+reports/junit/
+.playwright/
+.DS_Store
+Thumbs.db
+.env
+.env.local
+# Snapshots ARE committed — do NOT add tests/visual/__snapshots__/
