@@ -10,7 +10,24 @@ export async function freezeAnimations(page: Page): Promise<void> {
         transition-duration: 0s !important;
         transition-delay: 0s !important;
       }
+      /* Hide scrollbars so their width never affects element screenshot dimensions.
+         Without this, a visible scrollbar (e.g. ~4 px on Windows Chromium) shifts
+         all element widths, causing spurious dimension mismatches in baselines. */
+      ::-webkit-scrollbar { width: 0 !important; height: 0 !important; }
+      html { scrollbar-width: none !important; }
     `,
+  });
+  // Pause videos and stop all JS timers (carousels, counters, auto-sliding) so
+  // screenshots are deterministic regardless of how long the page has been running.
+  // Interval IDs are sequential from 1; clearing up to the highest current ID
+  // stops every running setInterval/setTimeout in the page.
+  await page.evaluate(() => {
+    document.querySelectorAll<HTMLVideoElement>('video').forEach(v => v.pause());
+    const maxId = window.setTimeout(() => {}, 0) as unknown as number;
+    for (let id = 1; id <= maxId; id++) {
+      window.clearInterval(id);
+      window.clearTimeout(id);
+    }
   });
 }
 
@@ -34,7 +51,10 @@ export async function triggerLazyLoad(page: Page): Promise<void> {
       }, 500);
     });
   });
-  await page.waitForTimeout(1000);
+  // Extra dwell at the bottom: IntersectionObserver callbacks fire asynchronously
+  // and async API fetches for late-page sections (Portfolio, FAQ, footer) need time
+  // to resolve before scrollToSection checks their DOM presence.
+  await page.waitForTimeout(2000);
 }
 
 /** Wait for all images matching selector to finish loading. */

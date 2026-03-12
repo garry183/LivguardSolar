@@ -10,11 +10,20 @@
     "test:headed": "playwright test tests/visual/ --headed",
     "test:debug": "playwright test tests/visual/ --debug",
     "test:report": "playwright show-report reports/html",
+    "allure:serve": "npx allure serve allure-results",
+    "allure:generate": "npx allure generate allure-results --clean -o allure-report",
+    "allure:open": "npx allure open allure-report",
+    "test:allure": "playwright test tests/visual/ & npx allure serve allure-results",
+    "test:solar-for-home:allure": "playwright test tests/visual/solar-for-home.visual.spec.ts --workers=100% & npx allure serve allure-results",
+    "test:homepage:allure": "playwright test tests/visual/homepage.visual.spec.ts --workers=100% & npx allure serve allure-results",
     "install:browsers": "playwright install --with-deps"
   },
   "devDependencies": {
     "@playwright/test": "^1.50.0",
     "@types/node": "^25.3.3",
+    "allure-commandline": "^2.37.0",
+    "allure-playwright": "^3.5.0",
+    "c8": "^11.0.0",
     "typescript": "^5.7.0"
   }
 }

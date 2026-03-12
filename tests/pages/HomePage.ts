@@ -91,6 +91,10 @@ export class HomePage {
     await triggerLazyLoad(this.page);
     await waitForAllImages(this.page);
     await freezeAnimations(this.page);
+    // Note: overflow:visible for Firefox fullPage screenshots is NOT applied here.
+    // Applying it in prepareForSnapshot causes Firefox's IntersectionObserver to
+    // re-fire on the layout change, unmounting sections and breaking later scrollToSection
+    // calls. It is applied in the full-page snapshot tests, right before toHaveScreenshot.
   }
 
   async scrollToSection(locator: Locator): Promise<void> {
@@ -105,11 +109,12 @@ export class HomePage {
         await this.page.waitForTimeout(500);
       }
     }
-    // Wait for the element to be in the DOM before scrolling into view.
-    // On Firefox's first cold-cache load the section's async content (text fetched
-    // from an API after IntersectionObserver fires) may not have arrived yet even
-    // after triggerLazyLoad + networkidle. A generous 30-s window covers this.
-    await locator.waitFor({ state: 'attached', timeout: 30_000 });
+    // Wait for the element (and its async text content) to be in the DOM.
+    // 150 s covers Firefox cold-cache runs where async API responses that populate
+    // section headings are delayed by bandwidth contention with the parallel Chromium worker.
+    // weAreEverywhereSection and faqSection text is API-driven and can take >90 s on
+    // slow/contended connections (observed in CI: Nationwide Reach timed out at 90 s).
+    await locator.waitFor({ state: 'attached', timeout: 150_000 });
     // Use evaluate to bypass Playwright's actionability check — elements inside
     // overflow:hidden carousels are in the DOM but not "actionable", causing
     // scrollIntoViewIfNeeded to time out.

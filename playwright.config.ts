@@ -2,10 +2,11 @@ import { defineConfig, devices } from '@playwright/test';
 
 export default defineConfig({
   testDir: './tests',
+  globalTeardown: './global-teardown.ts',
   fullyParallel: false,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 1 : 0,
-  workers: 2,
+  workers: 10,
   timeout: 60_000,
 
   expect: {
@@ -34,6 +35,7 @@ export default defineConfig({
     ['list'],
     ['html', { outputFolder: 'reports/html', open: 'never' }],
     ['junit', { outputFile: 'reports/junit/results.xml' }],
+    ['allure-playwright', { outputFolder: 'allure-results', suiteTitle: false }],
   ],
 
   outputDir: 'reports/test-results',
@@ -47,19 +49,12 @@ export default defineConfig({
       },
     },
     {
-      name: 'firefox-desktop',
-      use: {
-        ...devices['Desktop Firefox'],
-        viewport: { width: 1440, height: 900 },
-      },
-    },
-    {
       name: 'mobile-chrome',
       use: { ...devices['Pixel 5'] },
     },
     {
-      name: 'tablet-safari',
-      use: { ...devices['iPad (gen 7)'] },
+      name: 'mobile-safari',
+      use: { ...devices['iPhone 13'] },
     },
   ],
 });

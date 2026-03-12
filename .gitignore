@@ -3,9 +3,12 @@ dist/
 reports/test-results/
 reports/html/
 reports/junit/
+allure-report/
+allure-results/
 .playwright/
 .DS_Store
 Thumbs.db
 .env
 .env.local
+tmpclaude-*
 # Snapshots ARE committed — do NOT add tests/visual/__snapshots__/
