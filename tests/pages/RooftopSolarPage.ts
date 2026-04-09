@@ -10,65 +10,104 @@ export class RooftopSolarPage {
 
   // Sections — ordered top to bottom as they appear on
   // https://stage.livguardsolar.com/rooftop-solar
+  //
+  // Self-healing locator pattern: primary.or(fallback)
+  //   primary  = semantic (getByRole heading / ARIA role)
+  //   fallback = structural (CSS position / text filter)
   readonly heroSection: Locator;
-  readonly bookSurveySection: Locator;
-  readonly benefitsCarouselSection: Locator;
   readonly statsSection: Locator;
-  readonly goSolarStepsSection: Locator;
-  readonly portfolioSection: Locator;
   readonly whyLivguardSection: Locator;
-  readonly nationwideReachSection: Locator;
-  readonly testimonialsSection: Locator;
+  readonly portfolioSection: Locator;
+  readonly goSolarStepsSection: Locator;
+  readonly bookSurveySection: Locator;
   readonly faqSection: Locator;
   readonly footer: Locator;
 
   constructor(page: Page) {
     this.page = page;
 
-    // Header
-    this.logo = page.getByRole('banner').getByRole('img', { name: /livguard/i });
-    this.navbar = page.getByRole('banner');
+    // Structural base for positional fallbacks (page uses single <main>, not nested main > main)
+    const sections = page.locator('main > :is(section, div)');
 
-    // Hero — main banner: "Save Big on Every Bill — Go Solar & Reduce Costs Up to 70%"
-    this.heroSection = page.locator('main > main > :is(section, div)').first();
+    // ── Header ──
+    // Primary: ARIA banner role | Fallback: <header> tag
+    this.navbar = page.getByRole('banner').or(page.locator('header').first());
+    // Primary: role-based img inside banner | Fallback: CSS attribute selector
+    this.logo = page
+      .getByRole('banner')
+      .getByRole('img', { name: /livguard/i })
+      .or(page.locator('header img[alt*="ivguard"]').first());
 
-    // Book Free Solar Survey — consultation form section.
-    // Text: "Book free solar consultation" / "BOOK FREE SOLAR SURVEY"
-    this.bookSurveySection = page.locator('main > main > :is(section, div)').filter({ hasText: /book free solar/i }).first();
+    // ── Hero ── "Save Big on Every Bill — Go Solar & Reduce Costs Up to 70%"
+    // Primary: heading-based semantic locator
+    // Fallback: first direct child of <main>
+    this.heroSection = page
+      .locator('main > div')
+      .filter({ has: page.getByRole('heading', { level: 1, name: /save big on every bill/i }) })
+      .first()
+      .or(sections.first());
 
-    // Benefits Carousel — image carousel with subsidy / warranty / net metering slides.
-    // Text: "Government subsidy assistance" | "27-years comprehensive warranty"
-    this.benefitsCarouselSection = page.locator('main > main > :is(section, div)').filter({ hasText: /government subsidy assistance|27-years|net metering setup/i }).first();
+    // ── Stats ── MNRE / 50,000+ installations badge strip
+    // Primary: text content filter (stat keywords)
+    // Fallback: 2nd direct child of <main> (immediately below hero)
+    this.statsSection = page
+      .locator('main > div')
+      .filter({ hasText: /MNRE|50[\s,.]?000|DISCOM/i })
+      .first()
+      .or(sections.nth(1));
 
-    // Stats — installation count + approvals.
-    // Text: "50,000+" or "MNRE" or "DISCOM"
-    this.statsSection = page.locator('main > main > :is(section, div)').filter({ hasText: /50,000|MNRE|DISCOM/i }).first();
+    // ── Why Choose Livguard Solar 360 ──
+    // Primary: heading-based
+    // Fallback: broader text filter covering old + new heading text
+    this.whyLivguardSection = page
+      .locator('main > div')
+      .filter({ has: page.getByRole('heading', { name: /why choose livguard/i }) })
+      .first()
+      .or(sections.filter({ hasText: /why choose.*livguard|why livguard/i }).first());
 
-    // Go Solar Steps — process/steps section.
-    // Text: "simple steps" (shared pattern across the site)
-    this.goSolarStepsSection = page.locator('main > main > :is(section, div)').filter({ hasText: /simple steps/i }).first();
+    // ── 360 Portfolio of Solar Solutions ──
+    // Primary: heading-based
+    // Fallback: text filter
+    this.portfolioSection = page
+      .locator('main > div')
+      .filter({ has: page.getByRole('heading', { name: /360 portfolio/i }) })
+      .first()
+      .or(sections.filter({ hasText: /360 portfolio/i }).first());
 
-    // 360 Portfolio — product categories grid.
-    // Text: "360 portfolio of solar solutions"
-    this.portfolioSection = page.locator('main > main > :is(section, div)').filter({ hasText: /360 portfolio/i }).first();
+    // ── Go Solar Steps ── "Experience Livguard Solar 360 in 4 simple steps"
+    // Primary: heading-based
+    // Fallback: text filter
+    this.goSolarStepsSection = page
+      .locator('main > div')
+      .filter({ has: page.getByRole('heading', { name: /simple steps/i }) })
+      .first()
+      .or(sections.filter({ hasText: /simple steps/i }).first());
 
-    // Why Livguard Solar — trust / benefits section.
-    this.whyLivguardSection = page.locator('main > main > :is(section, div)').filter({ hasText: /why livguard solar/i }).first();
+    // ── Book Solar Consultation ── "Book Your Free Solar Consultation Now"
+    // Primary: heading-based
+    // Fallback: specific text filter (avoids matching hero booking CTA)
+    this.bookSurveySection = page
+      .locator('main > div')
+      .filter({ has: page.getByRole('heading', { name: /book your free solar/i }) })
+      .first()
+      .or(sections.filter({ hasText: /book your free solar consultation/i }).first());
 
-    // Nationwide Reach — pan-India service reach section.
-    // Text: "Nationwide Reach, Local Support"
-    this.nationwideReachSection = page.locator('main > main > :is(section, div)').filter({ hasText: /nationwide reach/i }).first();
+    // ── FAQ ── "Most Common Questions and Answers"
+    // Primary: heading-based
+    // Fallback: text filter covering old + new heading text
+    this.faqSection = page
+      .locator('main > div')
+      .filter({ has: page.getByRole('heading', { name: /common questions/i }) })
+      .first()
+      .or(sections.filter({ hasText: /questions and answers|frequently asked|faq/i }).first());
 
-    // Testimonials / Happy Customers — customer testimonials carousel.
-    // Text: "happy customers"
-    this.testimonialsSection = page.locator('main > main > :is(section, div)').filter({ hasText: /happy customers/i }).first();
-
-    // FAQ — Frequently Asked Questions.
-    // Text: "frequently asked questions" or "FAQ"
-    this.faqSection = page.locator('main > main > :is(section, div)').filter({ hasText: /frequently asked questions|faq/i }).first();
-
-    // Footer
-    this.footer = page.locator('footer').first();
+    // ── Footer ──
+    // Primary: <footer> HTML tag
+    // Fallback: ARIA contentinfo role (fires when footer is a top-level landmark)
+    this.footer = page
+      .locator('footer')
+      .first()
+      .or(page.getByRole('contentinfo').first());
   }
 
   async goto(): Promise<void> {
@@ -110,13 +149,17 @@ export class RooftopSolarPage {
 
   async scrollToSection(locator: Locator): Promise<void> {
     // Re-trigger lazy loading if the section was unmounted by IntersectionObserver.
-    if (await locator.count() === 0) {
+    if ((await locator.count()) === 0) {
       const scrollHeight = await this.page.evaluate(() => document.body.scrollHeight);
       await this.page.evaluate(() => window.scrollTo(0, 0));
-      for (let y = 600; y <= scrollHeight && await locator.count() === 0; y += 600) {
+      for (let y = 600; y <= scrollHeight && (await locator.count()) === 0; y += 600) {
         await this.page.evaluate((pos) => window.scrollTo(0, pos), y);
         await this.page.waitForTimeout(500);
       }
+      // Scroll to absolute bottom (page may have grown during lazy load) and wait
+      // for React to render remaining async sections (e.g. footer).
+      await this.page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
+      await this.page.waitForTimeout(2_000);
     }
 
     // 150 s covers slow async API responses on cold-cache Firefox / mobile-safari.

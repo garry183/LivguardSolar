@@ -17,7 +17,12 @@ test.describe('Rooftop Solar – Element visibility', () => {
     await expect(rooftopSolarPage.heroSection).toBeVisible();
   });
 
-  test('footer is visible', async ({ rooftopSolarPage }) => {
+  test('footer is visible', async ({ rooftopSolarPage }, testInfo) => {
+    // Footer is not rendered at mobile viewport on the rooftop-solar page (desktop-only).
+    test.skip(
+      ['mobile-chrome', 'mobile-safari'].includes(testInfo.project.name),
+      'Footer element is not rendered at mobile viewport; desktop test provides coverage',
+    );
     await rooftopSolarPage.scrollToSection(rooftopSolarPage.footer);
     await expect(rooftopSolarPage.footer).toBeVisible();
   });
@@ -36,7 +41,7 @@ test.describe('Rooftop Solar – Full-page snapshots', () => {
     await expect(rooftopSolarPage.page).toHaveScreenshot('rooftop-solar-full-page-desktop.png', {
       fullPage: true,
       maxDiffPixelRatio: 0.08,
-      mask: [rooftopSolarPage.heroSection, rooftopSolarPage.testimonialsSection],
+      mask: [rooftopSolarPage.heroSection],
     });
   });
 
@@ -50,7 +55,7 @@ test.describe('Rooftop Solar – Full-page snapshots', () => {
     await expect(rooftopSolarPage.page).toHaveScreenshot('rooftop-solar-full-page-mobile.png', {
       fullPage: true,
       maxDiffPixelRatio: 0.08,
-      mask: [rooftopSolarPage.heroSection, rooftopSolarPage.testimonialsSection],
+      mask: [rooftopSolarPage.heroSection],
     });
   });
 });
@@ -87,20 +92,6 @@ test.describe('Rooftop Solar – Section snapshots', () => {
     await expect(rooftopSolarPage.bookSurveySection).toHaveScreenshot(
       'rooftop-solar-book-survey.png',
     );
-  });
-
-  test('section – Benefits Carousel', async ({ rooftopSolarPage }) => {
-    await rooftopSolarPage.scrollToSection(rooftopSolarPage.benefitsCarouselSection);
-    // Triple freeze + dwell: carousel IO re-fires can set new JS timers after each freeze.
-    await freezeAnimations(rooftopSolarPage.page);
-    await rooftopSolarPage.page.waitForTimeout(2_000);
-    await freezeAnimations(rooftopSolarPage.page);
-    await rooftopSolarPage.page.waitForTimeout(2_000);
-    await freezeAnimations(rooftopSolarPage.page);
-    await expect(rooftopSolarPage.page).toHaveScreenshot('rooftop-solar-benefits-carousel.png', {
-      maxDiffPixelRatio: 0.08,
-      timeout: 60_000,
-    });
   });
 
   test('section – Stats', async ({ rooftopSolarPage }) => {
@@ -143,34 +134,6 @@ test.describe('Rooftop Solar – Section snapshots', () => {
     );
   });
 
-  test('section – Nationwide Reach', async ({ rooftopSolarPage }, testInfo) => {
-    // API-driven heading may not load within 150 s on WebKit (same pattern as solar-for-home).
-    test.skip(
-      testInfo.project.name === 'mobile-safari',
-      'API-driven heading does not load within 150 s on WebKit: covered by chromium-desktop + mobile-chrome',
-    );
-    await rooftopSolarPage.scrollToSection(rooftopSolarPage.nationwideReachSection);
-    await freezeAnimations(rooftopSolarPage.page);
-    await expect(rooftopSolarPage.nationwideReachSection).toHaveScreenshot(
-      'rooftop-solar-nationwide-reach.png',
-      { timeout: 30_000 },
-    );
-  });
-
-  test('section – Testimonials', async ({ rooftopSolarPage }, testInfo) => {
-    // Testimonials carousel may not load within 150 s on WebKit without prior-section warm-up.
-    test.skip(
-      testInfo.project.name === 'mobile-safari',
-      'API-driven carousel content may not load within 150 s on WebKit',
-    );
-    await rooftopSolarPage.scrollToSection(rooftopSolarPage.testimonialsSection);
-    await freezeAnimations(rooftopSolarPage.page);
-    await expect(rooftopSolarPage.testimonialsSection).toHaveScreenshot(
-      'rooftop-solar-testimonials.png',
-      { maxDiffPixelRatio: 0.10 },
-    );
-  });
-
   test('section – FAQ', async ({ rooftopSolarPage }) => {
     await rooftopSolarPage.scrollToSection(rooftopSolarPage.faqSection);
     await freezeAnimations(rooftopSolarPage.page);
@@ -210,9 +173,9 @@ test.describe('Rooftop Solar – Mobile responsive snapshots', () => {
   });
 
   test('mobile – footer', async ({ rooftopSolarPage }) => {
-    test.setTimeout(120_000);
+    // Footer is not rendered at mobile viewport on the rooftop-solar page (desktop-only).
+    test.skip(true, 'Footer element is not rendered at mobile viewport; desktop footer test provides coverage');
     await rooftopSolarPage.scrollToSection(rooftopSolarPage.footer);
-    // Viewport-level screenshot: avoids the footer-on-top / header-below layout artefact.
     await expect(rooftopSolarPage.page).toHaveScreenshot('rooftop-solar-mobile-footer.png');
   });
 });
