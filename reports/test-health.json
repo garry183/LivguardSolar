@@ -1,0 +1,174 @@
+{
+  "last_updated": "2026-04-10T05:35:49.822Z",
+  "run_id": "run-20260410053549-5mu1",
+  "summary": {
+    "total_tests": 18,
+    "passed": 14,
+    "failed": 1,
+    "quarantined_blocking": 0
+  },
+  "tests": {
+    "rooftop-solar-element-visibility-navbar-is-visible-chromium-desktop": {
+      "flakiness_score": 0,
+      "runs_analyzed": 1,
+      "consecutive_passes": 1,
+      "status": "healthy",
+      "last_category": null,
+      "last_failure_timestamp": null,
+      "last_error_snippet": null
+    },
+    "rooftop-solar-element-visibility-logo-is-visible-chromium-desktop": {
+      "flakiness_score": 0,
+      "runs_analyzed": 1,
+      "consecutive_passes": 1,
+      "status": "healthy",
+      "last_category": null,
+      "last_failure_timestamp": null,
+      "last_error_snippet": null
+    },
+    "rooftop-solar-element-visibility-hero-section-is-visible-chromium-desktop": {
+      "flakiness_score": 0,
+      "runs_analyzed": 1,
+      "consecutive_passes": 1,
+      "status": "healthy",
+      "last_category": null,
+      "last_failure_timestamp": null,
+      "last_error_snippet": null
+    },
+    "rooftop-solar-element-visibility-footer-is-visible-chromium-desktop": {
+      "flakiness_score": 0,
+      "runs_analyzed": 1,
+      "consecutive_passes": 1,
+      "status": "healthy",
+      "last_category": null,
+      "last_failure_timestamp": null,
+      "last_error_snippet": null
+    },
+    "rooftop-solar-full-page-snapshots-full-page-desktop-chromium-desktop": {
+      "flakiness_score": 0,
+      "runs_analyzed": 1,
+      "consecutive_passes": 0,
+      "status": "healthy",
+      "last_category": null,
+      "last_failure_timestamp": null,
+      "last_error_snippet": null
+    },
+    "rooftop-solar-full-page-snapshots-full-page-mobile-chromium-desktop": {
+      "flakiness_score": 0,
+      "runs_analyzed": 1,
+      "consecutive_passes": 0,
+      "status": "healthy",
+      "last_category": null,
+      "last_failure_timestamp": null,
+      "last_error_snippet": null
+    },
+    "rooftop-solar-section-snapshots-section-navbar-chromium-desktop": {
+      "flakiness_score": 0,
+      "runs_analyzed": 1,
+      "consecutive_passes": 1,
+      "status": "healthy",
+      "last_category": null,
+      "last_failure_timestamp": null,
+      "last_error_snippet": null
+    },
+    "rooftop-solar-section-snapshots-section-hero-chromium-desktop": {
+      "flakiness_score": 1,
+      "runs_analyzed": 1,
+      "consecutive_passes": 0,
+      "status": "quarantined",
+      "last_category": "THRESHOLD_DRIFT",
+      "last_failure_timestamp": "2026-04-10T05:35:49.822Z",
+      "last_error_snippet": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mpage\u001b[39m\u001b[2m).\u001b[22mtoHaveScreenshot\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\n  68048 pixels (ratio 0.06 of all image pixels) are different.\n\n  Snapshot: rooftop-solar"
+    },
+    "rooftop-solar-section-snapshots-section-book-solar-survey-chromium-desktop": {
+      "flakiness_score": 0,
+      "runs_analyzed": 1,
+      "consecutive_passes": 1,
+      "status": "healthy",
+      "last_category": null,
+      "last_failure_timestamp": null,
+      "last_error_snippet": null
+    },
+    "rooftop-solar-section-snapshots-section-stats-chromium-desktop": {
+      "flakiness_score": 0,
+      "runs_analyzed": 1,
+      "consecutive_passes": 1,
+      "status": "healthy",
+      "last_category": null,
+      "last_failure_timestamp": null,
+      "last_error_snippet": null
+    },
+    "rooftop-solar-section-snapshots-section-go-solar-steps-chromium-desktop": {
+      "flakiness_score": 0,
+      "runs_analyzed": 1,
+      "consecutive_passes": 1,
+      "status": "healthy",
+      "last_category": null,
+      "last_failure_timestamp": null,
+      "last_error_snippet": null
+    },
+    "rooftop-solar-section-snapshots-section-360-portfolio-chromium-desktop": {
+      "flakiness_score": 0,
+      "runs_analyzed": 1,
+      "consecutive_passes": 1,
+      "status": "healthy",
+      "last_category": null,
+      "last_failure_timestamp": null,
+      "last_error_snippet": null
+    },
+    "rooftop-solar-section-snapshots-section-why-livguard-solar-chromium-desktop": {
+      "flakiness_score": 0,
+      "runs_analyzed": 1,
+      "consecutive_passes": 1,
+      "status": "healthy",
+      "last_category": null,
+      "last_failure_timestamp": null,
+      "last_error_snippet": null
+    },
+    "rooftop-solar-section-snapshots-section-faq-chromium-desktop": {
+      "flakiness_score": 0,
+      "runs_analyzed": 1,
+      "consecutive_passes": 1,
+      "status": "healthy",
+      "last_category": null,
+      "last_failure_timestamp": null,
+      "last_error_snippet": null
+    },
+    "rooftop-solar-section-snapshots-section-footer-chromium-desktop": {
+      "flakiness_score": 0,
+      "runs_analyzed": 1,
+      "consecutive_passes": 1,
+      "status": "healthy",
+      "last_category": null,
+      "last_failure_timestamp": null,
+      "last_error_snippet": null
+    },
+    "rooftop-solar-mobile-responsive-snapshots-mobile-navbar-chromium-desktop": {
+      "flakiness_score": 0,
+      "runs_analyzed": 1,
+      "consecutive_passes": 1,
+      "status": "healthy",
+      "last_category": null,
+      "last_failure_timestamp": null,
+      "last_error_snippet": null
+    },
+    "rooftop-solar-mobile-responsive-snapshots-mobile-hero-chromium-desktop": {
+      "flakiness_score": 0,
+      "runs_analyzed": 1,
+      "consecutive_passes": 1,
+      "status": "healthy",
+      "last_category": null,
+      "last_failure_timestamp": null,
+      "last_error_snippet": null
+    },
+    "rooftop-solar-mobile-responsive-snapshots-mobile-footer-chromium-desktop": {
+      "flakiness_score": 0,
+      "runs_analyzed": 1,
+      "consecutive_passes": 0,
+      "status": "healthy",
+      "last_category": null,
+      "last_failure_timestamp": null,
+      "last_error_snippet": null
+    }
+  }
+}

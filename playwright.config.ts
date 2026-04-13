@@ -33,6 +33,7 @@ export default defineConfig({
 
   reporter: [
     ['list'],
+    ['json', { outputFile: 'reports/playwright-report.json' }],
     ['html', { outputFolder: 'reports/html', open: 'never' }],
     ['junit', { outputFile: 'reports/junit/results.xml' }],
     ['allure-playwright', { outputFolder: 'allure-results', suiteTitle: false }],

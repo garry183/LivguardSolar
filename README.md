@@ -1,6 +1,6 @@
 # LivguardSolar Visual Regression Framework
 
-Playwright-based visual regression test suite for [livguardsolar.com](https://www.livguardsolar.com), with Allure reporting and multi-browser/multi-viewport coverage.
+Playwright-based visual regression test suite for [livguardsolar.com](https://www.livguardsolar.com), with Allure reporting, multi-browser/multi-viewport coverage, and a built-in brain layer that classifies failures and tracks test health over time.
 
 ---
 
@@ -46,8 +46,19 @@ tests/
     rooftop-solar.visual.spec.ts
     __snapshots__/    # Baseline PNG snapshots (committed to git)
 
+brain/                # Post-run intelligence layer (see BRAIN.md)
+  types.ts            # Shared TypeScript interfaces
+  rules.ts            # 5 classification rules
+  history.ts          # Append-only run history (NDJSON)
+  health.ts           # Flakiness scoring and health computation
+  analyze.ts          # Orchestrator — entry point
+
+reports/              # Generated after every run (partially committed to git)
+  run-history.ndjson  # Append-only log of every test result (committed)
+  test-health.json    # Current health snapshot of every test (committed)
+
 playwright.config.ts
-global-teardown.ts    # Auto-generates and opens Allure report after every run
+global-teardown.ts    # Auto-generates Allure report + runs brain analysis
 ```
 
 ---
@@ -155,6 +166,46 @@ Default: `https://www.livguardsolar.com`
 
 ---
 
+---
+
+## Brain layer
+
+After every run (local or CI), the brain layer automatically:
+
+1. Reads `reports/playwright-report.json`
+2. Classifies each failure into one of 5 categories: `FLAKY`, `INFRA`, `REAL_REGRESSION`, `SELECTOR_BROKEN`, `THRESHOLD_DRIFT`
+3. Appends results to `reports/run-history.ndjson`
+4. Rewrites `reports/test-health.json` with updated flakiness scores
+5. Prints a structured summary to the console
+
+**The brain runs automatically** — you do not need to do anything extra after running tests.
+
+### Brain commands
+
+```bash
+# Re-run analysis on the last test report without re-running tests
+npm run brain:analyze
+
+# Clear all local history and health data (start fresh)
+npm run brain:reset
+```
+
+### Local vs CI
+
+| | Local | CI (GitHub Actions) |
+|---|---|---|
+| Brain runs automatically | Yes — via `global-teardown.ts` | Yes — via workflow step |
+| History accumulates | Yes — in `reports/` | Yes — committed back to `main` after each run |
+| Health file updated | Yes | Yes — auto-committed with `[skip ci]` |
+| Manual standalone run | `npm run brain:analyze` | `npx ts-node brain/analyze.ts` |
+| Reset history | `npm run brain:reset` | Delete and commit the two files |
+
+**Locally**, the two health files (`run-history.ndjson`, `test-health.json`) accumulate on your machine with each run. You can commit them when you want to share your local run history, or reset them with `npm run brain:reset` to start clean.
+
+> Full explanation of how the brain works, the 5 rules, health scoring, and design decisions: see **[BRAIN.md](./BRAIN.md)**
+
+---
+
 ## CI notes
 
 - `forbidOnly` is enforced in CI (`process.env.CI`).
@@ -162,3 +213,4 @@ Default: `https://www.livguardsolar.com`
 - Workers: 10 parallel workers.
 - Navigation timeout: 45 s; action timeout: 15 s; per-test timeout: 60 s (extended per-describe where needed up to 400 s for slow API-driven sections).
 - Screenshots, videos, and traces are retained only on failure.
+- The CI workflow (`.github/workflows/visual-tests.yml`) runs on push to `main`, on PRs targeting `main`, and on a daily schedule at 06:00 UTC.

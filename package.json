@@ -3,11 +3,11 @@
   "version": "1.0.0",
   "description": "Playwright visual regression tests for livguardsolar.com",
   "scripts": {
-    "test:visual": "playwright test tests/visual/",
+    "test:visual": "playwright test tests/visual/; npx ts-node brain/analyze.ts",
     "test:update-snapshots": "playwright test tests/visual/ --update-snapshots",
-    "test:desktop": "playwright test tests/visual/ --project=chromium-desktop",
-    "test:mobile": "playwright test tests/visual/ --project=mobile-chrome",
-    "test:headed": "playwright test tests/visual/ --headed",
+    "test:desktop": "playwright test tests/visual/ --project=chromium-desktop; npx ts-node brain/analyze.ts",
+    "test:mobile": "playwright test tests/visual/ --project=mobile-chrome; npx ts-node brain/analyze.ts",
+    "test:headed": "playwright test tests/visual/ --headed; npx ts-node brain/analyze.ts",
     "test:debug": "playwright test tests/visual/ --debug",
     "test:report": "playwright show-report reports/html",
     "allure:serve": "npx allure serve allure-results",
@@ -16,10 +16,13 @@
     "test:allure": "playwright test tests/visual/ & npx allure serve allure-results",
     "test:solar-for-home:allure": "playwright test tests/visual/solar-for-home.visual.spec.ts --workers=100% & npx allure serve allure-results",
     "test:homepage:allure": "playwright test tests/visual/homepage.visual.spec.ts --workers=100% & npx allure serve allure-results",
-    "install:browsers": "playwright install --with-deps"
+    "install:browsers": "playwright install --with-deps",
+    "brain:analyze": "ts-node brain/analyze.ts",
+    "brain:reset": "node -e \"require('fs').rmSync('reports/run-history.ndjson',{force:true}); require('fs').rmSync('reports/test-health.json',{force:true}); console.log('Brain history cleared.');\""
   },
   "devDependencies": {
     "@playwright/test": "^1.50.0",
+    "ts-node": "^10.9.2",
     "@types/node": "^25.3.3",
     "allure-commandline": "^2.37.0",
     "allure-playwright": "^3.5.0",
