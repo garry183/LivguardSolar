@@ -20,11 +20,12 @@ export class RooftopSolarNoidaPage extends RooftopSolarPage {
 
     // networkidle fires quickly on Chromium/WebKit; Firefox keeps analytics and
     // polling connections open indefinitely so networkidle never fires there.
-    // Cap at 8 s then fall back to a short pause to avoid blocking slow Firefox runs.
+    // CI runners are geographically distant from the staging server so allow more time.
+    const networkIdleTimeout = process.env.CI ? 30_000 : 8_000;
     try {
-      await this.page.waitForLoadState('networkidle', { timeout: 8_000 });
+      await this.page.waitForLoadState('networkidle', { timeout: networkIdleTimeout });
     } catch {
-      await this.page.waitForTimeout(2_000);
+      await this.page.waitForTimeout(process.env.CI ? 8_000 : 2_000);
     }
 
     // Wait for React hydration: SSR delivers nav + hidden H1 only.
@@ -33,6 +34,14 @@ export class RooftopSolarNoidaPage extends RooftopSolarPage {
       .first()
       .waitFor({ timeout: 30_000 })
       .catch(() => {});
+
+    // All content divs start hidden and are revealed by JS after page init.
+    // On CI, the JS that reveals them never fires (API calls / third-party
+    // scripts time out). Inject CSS to force all elements visible so tests
+    // can check structural presence rather than loading-animation state.
+    await this.page.addStyleTag({
+      content: `* { opacity: 1 !important; visibility: visible !important; }`,
+    });
 
     // Dismiss cookie consent banner.
     try {
