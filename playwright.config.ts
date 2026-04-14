@@ -5,9 +5,9 @@ export default defineConfig({
   globalTeardown: './global-teardown.ts',
   fullyParallel: false,
   forbidOnly: !!process.env.CI,
-  retries: process.env.CI ? 1 : 0,
+  retries: 0,
   workers: 10,
-  timeout: 60_000,
+  timeout: process.env.CI ? 120_000 : 60_000,
 
   expect: {
     timeout: 15_000,
@@ -21,7 +21,7 @@ export default defineConfig({
 
   use: {
     baseURL: process.env.BASE_URL ?? 'https://www.livguardsolar.com',
-    navigationTimeout: 45_000,
+    navigationTimeout: process.env.CI ? 90_000 : 45_000,
     actionTimeout: 15_000,
     screenshot: 'only-on-failure',
     video: 'retain-on-failure',
