@@ -16,7 +16,7 @@ pipelines:
     - step:
         name: Run Visual Tests
         script:
-          - BASE_URL=https://stage.livguardsolar.com/ npx playwright test tests/visual/
+          - BASE_URL=https://stage.livguardsolar.com/ ./node_modules/.bin/playwright test tests/visual/
         artifacts:
           - reports/html/**
           - reports/junit/**
