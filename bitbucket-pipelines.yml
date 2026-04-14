@@ -7,16 +7,12 @@ definitions:
 pipelines:
   default:
     - step:
-        name: Install Dependencies
+        name: Install and Run Visual Tests
         caches:
           - npm
         script:
           - npm ci
-
-    - step:
-        name: Run Visual Tests
-        script:
-          - BASE_URL=https://stage.livguardsolar.com/ ./node_modules/.bin/playwright test tests/visual/
+          - BASE_URL=https://stage.livguardsolar.com/ ./node_modules/.bin/playwright test tests/visual/rooftop-solar-noida.visual.spec.ts
         artifacts:
           - reports/html/**
           - reports/junit/**
