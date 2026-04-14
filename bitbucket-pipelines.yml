@@ -1,0 +1,51 @@
+image: node:20                                                                                                    
+                                                                                                                    
+  definitions:                                     
+    caches:
+      npm: ~/.npm                                                                                                   
+   
+  pipelines:                                                                                                        
+    branches:                            
+      main:
+        - step:
+            name: Install Dependencies
+            caches:                                
+              - npm
+            script:                                                                                                 
+              - echo "📚 Installing dependencies..."
+              - npm install                                                                                         
+                                         
+        - step:                                    
+            name: Install Browsers
+            script:                                                                                                 
+              - echo "🌐 Installing Playwright browsers..."
+              - npm run install:browsers                                                                            
+                                         
+    custom:                                        
+      run-visual-tests:
+        - step:                                                                                                     
+            name: Wait for Site Stability          
+            script:                                                                                                 
+              - echo "⏳ Waiting 5-10 minutes for staging to stabilize..."                                          
+              - sleep 300  # 5 minutes
+              - echo "✅ Site should be stable now"                                                                 
+                                         
+        - step:                                                                                                     
+            name: Run Visual Tests on Staging
+            script:                                                                                                 
+              - echo "🧪 Running visual regression tests..."
+              - BASE_URL=https://stage.livguardsolar.com/ npm run test:visual                                      
+                                         
+        - step:                                    
+            name: Generate Allure Report           
+            script:                                                                                                 
+              - echo "📊 Generating Allure reports..."                                                              
+              - npx allure generate allure-results --clean -o allure-report                                         
+                                                                                                                    
+        - step:                                    
+            name: Archive Artifacts
+            artifacts:                                                                                              
+              - allure-report/**
+              - reports/html/**                                                                                     
+              - reports/junit/results.xml          
+              - test-results/**
