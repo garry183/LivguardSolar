@@ -2,6 +2,13 @@ import { execSync, spawn } from 'child_process';
 import path from 'path';
 
 export default async function globalTeardown() {
+  // Skip Allure report generation in CI — Java is not available in the pipeline
+  // image. Raw allure-results are archived as artifacts and can be used locally.
+  if (process.env.CI) {
+    console.log('\n⏭️  Skipping Allure report generation in CI (no Java).');
+    return;
+  }
+
   const rootDir = path.resolve(__dirname);
   const resultsDir = path.join(rootDir, 'allure-results');
   const reportDir = path.join(rootDir, 'allure-report');
@@ -19,7 +26,6 @@ export default async function globalTeardown() {
   }
 
   console.log('🚀 Opening Allure report in browser...');
-  // Spawn detached so the server keeps running after the test process exits
   const child = spawn(
     'npx',
     ['allure', 'open', reportDir],

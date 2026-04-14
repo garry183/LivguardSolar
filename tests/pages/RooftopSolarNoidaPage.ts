@@ -1,6 +1,5 @@
 import { Page } from '@playwright/test';
 import { RooftopSolarPage } from './RooftopSolarPage';
-import { freezeAnimations } from '../utils/visualHelpers';
 
 /**
  * Page object for https://stage.livguardsolar.com/rooftop-solar-noida
@@ -42,6 +41,5 @@ export class RooftopSolarNoidaPage extends RooftopSolarPage {
       // Banner absent or already dismissed — continue.
     }
 
-    await freezeAnimations(this.page);
   }
 }
