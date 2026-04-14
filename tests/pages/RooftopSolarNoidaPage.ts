@@ -34,6 +34,12 @@ export class RooftopSolarNoidaPage extends RooftopSolarPage {
       await this.page.waitForTimeout(3_000);
     }
 
+    // The page starts with body { display: none } and JS sets it to block after
+    // initialisation. On CI that JS never fires so force it here.
+    await this.page.evaluate(() => {
+      document.body.style.setProperty('display', 'block', 'important');
+    });
+
     // Wait for React hydration: content divs become visible once JS initialises.
     await this.page
       .locator('section, div[class]')
