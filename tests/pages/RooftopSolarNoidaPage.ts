@@ -14,34 +14,62 @@ export class RooftopSolarNoidaPage extends RooftopSolarPage {
   }
 
   override async goto(): Promise<void> {
+    // Block third-party scripts that the page waits on before revealing content.
+    // On CI (US/EU runners), these never complete causing the page to stay in a
+    // hidden loading state. Blocking them lets page JS initialise immediately.
+    await this.page.route(
+      /\.(google-analytics\.com|googletagmanager\.com|fonts\.googleapis\.com|fonts\.gstatic\.com|connect\.facebook\.net|hotjar\.com|clarity\.ms|doubleclick\.net)/,
+      route => route.abort(),
+    );
+
     await this.page.goto('https://stage.livguardsolar.com/rooftop-solar-noida', {
       waitUntil: 'domcontentloaded',
     });
 
-    // networkidle fires quickly on Chromium/WebKit; Firefox keeps analytics and
-    // polling connections open indefinitely so networkidle never fires there.
-    // CI runners are geographically distant from the staging server so allow more time.
-    const networkIdleTimeout = process.env.CI ? 30_000 : 8_000;
+    // Wait for networkidle — with third-party scripts blocked, this should
+    // resolve quickly and reliably on both local and CI.
     try {
-      await this.page.waitForLoadState('networkidle', { timeout: networkIdleTimeout });
+      await this.page.waitForLoadState('networkidle', { timeout: 15_000 });
     } catch {
-      await this.page.waitForTimeout(process.env.CI ? 8_000 : 2_000);
+      await this.page.waitForTimeout(3_000);
     }
 
-    // Wait for React hydration: SSR delivers nav + hidden H1 only.
+    // Wait for React hydration: content divs become visible once JS initialises.
     await this.page
       .locator('section, div[class]')
       .first()
-      .waitFor({ timeout: 30_000 })
+      .waitFor({ state: 'visible', timeout: 30_000 })
       .catch(() => {});
 
-    // All content divs start hidden and are revealed by JS after page init.
-    // On CI, the JS that reveals them never fires (API calls / third-party
-    // scripts time out). Inject CSS to force all elements visible so tests
-    // can check structural presence rather than loading-animation state.
-    await this.page.addStyleTag({
-      content: `* { opacity: 1 !important; visibility: visible !important; }`,
+    // DEBUG: log computed styles of key elements to diagnose hidden state in CI.
+    const debugInfo = await this.page.evaluate(() => {
+      const header = document.querySelector('header');
+      const body = document.body;
+      const html = document.documentElement;
+      const firstDiv = document.querySelector('div[class]');
+      const getStyles = (el: Element | null) => {
+        if (!el) return null;
+        const s = window.getComputedStyle(el);
+        return {
+          display: s.display,
+          visibility: s.visibility,
+          opacity: s.opacity,
+          height: s.height,
+          width: s.width,
+          overflow: s.overflow,
+          className: (el as HTMLElement).className?.slice(0, 80),
+        };
+      };
+      return {
+        header: getStyles(header),
+        body: getStyles(body),
+        html: getStyles(html),
+        firstDiv: getStyles(firstDiv),
+        bodyChildCount: body.children.length,
+        title: document.title,
+      };
     });
+    console.log('[CI DEBUG] Page state after goto:', JSON.stringify(debugInfo, null, 2));
 
     // Dismiss cookie consent banner.
     try {
@@ -49,6 +77,5 @@ export class RooftopSolarNoidaPage extends RooftopSolarPage {
     } catch {
       // Banner absent or already dismissed — continue.
     }
-
   }
 }
