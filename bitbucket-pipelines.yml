@@ -13,7 +13,7 @@ pipelines:
         script:
           - npm ci
           - ./node_modules/.bin/playwright install --with-deps
-          - BASE_URL=https://stage.livguardsolar.com/ ./node_modules/.bin/playwright test tests/visual/rooftop-solar-noida.visual.spec.ts --project=chromium-desktop --grep "navbar is visible|logo is visible|hero section is visible"
+          - BASE_URL=https://stage.livguardsolar.com/ ./node_modules/.bin/playwright test tests/visual/rooftop-solar-noida.visual.spec.ts --project=chromium-desktop
         artifacts:
           - reports/html/**
           - reports/junit/**

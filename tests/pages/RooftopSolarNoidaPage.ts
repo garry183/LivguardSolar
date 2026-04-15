@@ -47,36 +47,6 @@ export class RooftopSolarNoidaPage extends RooftopSolarPage {
       .waitFor({ state: 'visible', timeout: 30_000 })
       .catch(() => {});
 
-    // DEBUG: log computed styles of key elements to diagnose hidden state in CI.
-    const debugInfo = await this.page.evaluate(() => {
-      const header = document.querySelector('header');
-      const body = document.body;
-      const html = document.documentElement;
-      const firstDiv = document.querySelector('div[class]');
-      const getStyles = (el: Element | null) => {
-        if (!el) return null;
-        const s = window.getComputedStyle(el);
-        return {
-          display: s.display,
-          visibility: s.visibility,
-          opacity: s.opacity,
-          height: s.height,
-          width: s.width,
-          overflow: s.overflow,
-          className: (el as HTMLElement).className?.slice(0, 80),
-        };
-      };
-      return {
-        header: getStyles(header),
-        body: getStyles(body),
-        html: getStyles(html),
-        firstDiv: getStyles(firstDiv),
-        bodyChildCount: body.children.length,
-        title: document.title,
-      };
-    });
-    console.log('[CI DEBUG] Page state after goto:', JSON.stringify(debugInfo, null, 2));
-
     // Dismiss cookie consent banner.
     try {
       await this.page.getByRole('button', { name: /got it/i }).click({ timeout: 3_000 });
