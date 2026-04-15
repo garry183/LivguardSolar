@@ -1,6 +1,9 @@
 import { mkdirSync } from 'fs';
+import path from 'path';
 import { Page } from '@playwright/test';
 import { RooftopSolarPage } from './RooftopSolarPage';
+
+const HAR_PATH = path.resolve(__dirname, '..', 'fixtures', 'har', 'rooftop-solar-noida.har');
 
 /**
  * Page object for https://stage.livguardsolar.com/rooftop-solar-noida
@@ -8,6 +11,11 @@ import { RooftopSolarPage } from './RooftopSolarPage';
  * Extends RooftopSolarPage — all section locators are inherited with their
  * self-healing .or() fallbacks. Only goto() is overridden to target the
  * city-specific URL.
+ *
+ * HAR workflow:
+ *   1. Record locally:  npm run test:record-har
+ *   2. Commit the HAR:  git add tests/fixtures/har/
+ *   3. CI replays HAR — all API-driven sections render without staging API access
  */
 export class RooftopSolarNoidaPage extends RooftopSolarPage {
   constructor(page: Page) {
@@ -15,9 +23,22 @@ export class RooftopSolarNoidaPage extends RooftopSolarPage {
   }
 
   override async goto(): Promise<void> {
+    // ── HAR replay/record ──
+    // In CI: replay recorded API responses so all sections render regardless of
+    // staging API accessibility. Locally with RECORD_HAR=1: record fresh responses.
+    if (process.env.CI) {
+      await this.page.routeFromHAR(HAR_PATH, {
+        url: /stage\.livguardsolar\.com/,
+        notFound: 'fallback',
+      });
+    } else if (process.env.RECORD_HAR) {
+      await this.page.routeFromHAR(HAR_PATH, {
+        url: /stage\.livguardsolar\.com/,
+        update: true,
+      });
+    }
+
     // Block third-party scripts that the page waits on before revealing content.
-    // On CI (US/EU runners), these never complete causing the page to stay in a
-    // hidden loading state. Blocking them lets page JS initialise immediately.
     await this.page.route(
       /\.(google-analytics\.com|googletagmanager\.com|fonts\.googleapis\.com|fonts\.gstatic\.com|connect\.facebook\.net|hotjar\.com|clarity\.ms|doubleclick\.net)/,
       route => route.abort(),
@@ -27,8 +48,8 @@ export class RooftopSolarNoidaPage extends RooftopSolarPage {
       waitUntil: 'domcontentloaded',
     });
 
-    // Wait for networkidle — with third-party scripts blocked, this should
-    // resolve quickly and reliably on both local and CI.
+    // Wait for networkidle — with third-party scripts blocked and HAR replay,
+    // this should resolve quickly on both local and CI.
     try {
       await this.page.waitForLoadState('networkidle', { timeout: 15_000 });
     } catch {
@@ -38,8 +59,7 @@ export class RooftopSolarNoidaPage extends RooftopSolarPage {
     // Force all page content visible (body display:none, loaders, overlays, etc.).
     await this.forcePageVisible();
 
-    // CI diagnostic: capture a screenshot right after forcing visibility so we
-    // can see exactly what state the page is in if tests still fail.
+    // CI diagnostic: capture page state after forcing visibility.
     if (process.env.CI) {
       mkdirSync('reports/test-results', { recursive: true });
       await this.page.screenshot({

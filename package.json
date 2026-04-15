@@ -19,6 +19,7 @@
     "install:browsers": "playwright install --with-deps",
     "brain:analyze": "ts-node brain/analyze.ts",
     "brain:reset": "node -e \"require('fs').rmSync('reports/run-history.ndjson',{force:true}); require('fs').rmSync('reports/test-health.json',{force:true}); console.log('Brain history cleared.');\"",
+    "test:record-har": "ts-node scripts/record-har.ts",
     "ci:artifacts": "ts-node scripts/fetch-pipeline-artifacts.ts",
     "ci:debug": "ts-node scripts/fetch-pipeline-artifacts.ts && ts-node brain/analyze.ts"
   },
