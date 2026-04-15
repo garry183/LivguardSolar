@@ -12,4 +12,8 @@ Thumbs.db
 .env.local
 tmpclaude-*
 reports/playwright-report.json
+
+ci-artifacts/
+reports/ci-*
+
 # Snapshots ARE committed — do NOT add tests/visual/__snapshots__/

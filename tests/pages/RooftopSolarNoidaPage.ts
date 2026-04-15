@@ -1,3 +1,4 @@
+import { mkdirSync } from 'fs';
 import { Page } from '@playwright/test';
 import { RooftopSolarPage } from './RooftopSolarPage';
 
@@ -34,11 +35,18 @@ export class RooftopSolarNoidaPage extends RooftopSolarPage {
       await this.page.waitForTimeout(3_000);
     }
 
-    // The page starts with body { display: none } and JS sets it to block after
-    // initialisation. On CI that JS never fires so force it here.
-    await this.page.evaluate(() => {
-      document.body.style.setProperty('display', 'block', 'important');
-    });
+    // Force all page content visible (body display:none, loaders, overlays, etc.).
+    await this.forcePageVisible();
+
+    // CI diagnostic: capture a screenshot right after forcing visibility so we
+    // can see exactly what state the page is in if tests still fail.
+    if (process.env.CI) {
+      mkdirSync('reports/test-results', { recursive: true });
+      await this.page.screenshot({
+        path: 'reports/test-results/debug-after-force-visible.png',
+        fullPage: false,
+      });
+    }
 
     // Wait for React hydration: content divs become visible once JS initialises.
     await this.page

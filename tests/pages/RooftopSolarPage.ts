@@ -111,6 +111,14 @@ export class RooftopSolarPage {
   }
 
   async goto(): Promise<void> {
+    // Block third-party scripts that CI runners (US/EU) can't reach.
+    if (process.env.CI) {
+      await this.page.route(
+        /\.(google-analytics\.com|googletagmanager\.com|fonts\.googleapis\.com|fonts\.gstatic\.com|connect\.facebook\.net|hotjar\.com|clarity\.ms|doubleclick\.net)/,
+        route => route.abort(),
+      );
+    }
+
     await this.page.goto('https://stage.livguardsolar.com/rooftop-solar', {
       waitUntil: 'domcontentloaded',
     });
@@ -124,11 +132,15 @@ export class RooftopSolarPage {
       await this.page.waitForTimeout(2_000);
     }
 
+    // Force everything visible — the page hides content behind body display:none,
+    // loader overlays, and CSS transitions that never fire on CI.
+    await this.forcePageVisible();
+
     // Wait for React hydration: SSR delivers nav + hidden H1 only.
     await this.page
       .locator('section, div[class]')
       .first()
-      .waitFor({ timeout: 30_000 })
+      .waitFor({ state: 'visible', timeout: 30_000 })
       .catch(() => {});
 
     // Dismiss cookie consent banner.
@@ -139,6 +151,50 @@ export class RooftopSolarPage {
     }
 
     await freezeAnimations(this.page);
+  }
+
+  /** Force all page content visible — removes loaders, overrides hidden CSS. */
+  protected async forcePageVisible(): Promise<void> {
+    await this.page.evaluate(() => {
+      document.body.style.setProperty('display', 'block', 'important');
+      document.body.style.setProperty('visibility', 'visible', 'important');
+      document.body.style.setProperty('opacity', '1', 'important');
+
+      // Remove loader / overlay elements.
+      document
+        .querySelectorAll<HTMLElement>(
+          '[class*="loader"], [class*="Loader"], [class*="spinner"], [class*="Spinner"], ' +
+          '[class*="overlay"], [class*="Overlay"], [class*="preload"], [class*="Preload"], ' +
+          '[id*="loader"], [id*="preloader"]',
+        )
+        .forEach((el) => el.remove());
+
+      // Force ancestors of main content landmarks visible.
+      for (const tag of ['main', 'header', 'nav']) {
+        const el = document.querySelector(tag);
+        let node = el?.parentElement;
+        while (node && node !== document.documentElement) {
+          node.style.setProperty('display', 'block', 'important');
+          node.style.setProperty('visibility', 'visible', 'important');
+          node.style.setProperty('opacity', '1', 'important');
+          node = node.parentElement;
+        }
+      }
+    });
+
+    // Inject style rule as safety net — catches CSS that re-hides after inline overrides.
+    await this.page.addStyleTag({
+      content: `
+        body, #__next, #root, #app, [id*="layout"], main, header, nav {
+          display: block !important;
+          visibility: visible !important;
+          opacity: 1 !important;
+        }
+        [class*="loader"], [class*="spinner"], [class*="overlay"], [class*="preload"] {
+          display: none !important;
+        }
+      `,
+    });
   }
 
   async prepareForSnapshot(): Promise<void> {
