@@ -7,7 +7,7 @@ definitions:
 pipelines:
   default:
     - step:
-        name: Install and Run Visual Tests
+        name: Install and Run Visual Tests (noida)
         caches:
           - npm
         script:
@@ -18,4 +18,4 @@ pipelines:
           - reports/html/**
           - reports/junit/**
           - allure-results/**
-          - test-results/**
+          - reports/test-results/**
