@@ -1,5 +1,6 @@
 import { Page } from '@playwright/test';
 import { RooftopSolarPage } from './RooftopSolarPage';
+import { triggerLazyLoad } from '../utils/visualHelpers';
 
 /**
  * Page object for https://stage.livguardsolar.com/rooftop-solar-noida
@@ -76,6 +77,10 @@ export class RooftopSolarNoidaPage extends RooftopSolarPage {
       };
     });
     console.log('[CI DEBUG] Page state after goto:', JSON.stringify(debugInfo, null, 2));
+
+    // Scroll the full page to trigger IntersectionObserver / lazy-loaded sections
+    // (footer, portfolio, etc. are not in the DOM until scrolled into view).
+    await triggerLazyLoad(this.page);
 
     // Dismiss cookie consent banner.
     try {
