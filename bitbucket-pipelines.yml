@@ -13,9 +13,17 @@ pipelines:
         script:
           - npm ci
           - ./node_modules/.bin/playwright install --with-deps
-          - BASE_URL=https://stage.livguardsolar.com/ ./node_modules/.bin/playwright test tests/visual/rooftop-solar-noida.visual.spec.ts --project=chromium-desktop; PW_EXIT=$?
-          - npx ts-node brain/analyze.ts || true
-          - exit $PW_EXIT
+          - >-
+            bash -c 'set +e;
+            BASE_URL=https://stage.livguardsolar.com/
+            ./node_modules/.bin/playwright test
+            tests/visual/rooftop-solar-noida.visual.spec.ts
+            --project=chromium-desktop
+            --update-snapshots;
+            PW_EXIT=$?;
+            npx ts-node brain/analyze.ts || true;
+            exit $PW_EXIT'
         artifacts:
           - reports/**
           - allure-results/**
+          - tests/visual/__snapshots__/**

@@ -92,12 +92,13 @@ async function main(): Promise<void> {
     process.exit(1);
   }
 
-  const pipelineUuid = pipeline.uuid.replace(/[{}]/g, '');
+  const pipelineUuid = pipeline.uuid; // keep braces — Bitbucket API requires {uuid} format
   const state = pipeline.state?.result?.name ?? pipeline.state?.name ?? 'unknown';
   const commit = pipeline.target?.commit?.hash?.slice(0, 7) ?? 'unknown';
   const createdOn = pipeline.created_on;
 
-  console.log(`Pipeline: ${pipelineUuid}`);
+  const pipelineDisplayId = pipelineUuid.replace(/[{}]/g, '');
+  console.log(`Pipeline: ${pipelineDisplayId}`);
   console.log(`  Commit : ${commit}`);
   console.log(`  State  : ${state}`);
   console.log(`  Created: ${createdOn}`);
@@ -120,7 +121,7 @@ async function main(): Promise<void> {
   );
 
   for (const step of steps) {
-    const stepUuid = step.uuid.replace(/[{}]/g, '');
+    const stepUuid = step.uuid;
     const stepName = step.name ?? 'step';
     console.log(`\nStep: ${stepName} (${stepUuid})`);
 
@@ -164,7 +165,7 @@ async function main(): Promise<void> {
 
   // 4. Also try downloading the step log
   for (const step of steps) {
-    const stepUuid = step.uuid.replace(/[{}]/g, '');
+    const stepUuid = step.uuid;
     const stepName = step.name ?? 'step';
     const logUrl = `${API_BASE}/pipelines/${pipelineUuid}/steps/${stepUuid}/log`;
     const logPath = path.join(runDir, `${stepName}-log.txt`);
