@@ -1,0 +1,1 @@
+function i({relativePath:e,cdnUrl:t}){return t&&t.trim()!==""?`${t}${e}`:e}export{i as a};

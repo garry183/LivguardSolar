@@ -1,0 +1,17 @@
+import{a as s}from"https://cdndev.livguardsolar.com/build/_shared/chunk-3X3UATGP.js";import{a as r}from"https://cdndev.livguardsolar.com/build/_shared/chunk-4NKNWFQ3.js";import"https://cdndev.livguardsolar.com/build/_shared/chunk-RN63NAG7.js";import{d as a}from"https://cdndev.livguardsolar.com/build/_shared/chunk-UVX3UIWA.js";var t=a(r()),m=[{id:"mnre",img:"/images/trustbar1.webp",desktopText:"MNRE / DISCOM Approved",mobileText:"MNRE-Approved Systems"},{id:"service",img:"/images/trustbar2.webp",desktopText:"Livguard nationwide service network",mobileText:"Livguard nationwide service network"},{id:"installations",img:"/images/trustbar3.webp",desktopText:"50000+ Solar Installations",mobileText:"50000+ Solar Installations"}],g=`
+  tw-w-[75px] tw-h-[50px] tw-flex-shrink-0
+  tw-grayscale tw-brightness-75 tw-contrast-[2.25]
+  tw-transition-all tw-duration-300
+  hover:tw-grayscale-0 hover:tw-brightness-100 hover:tw-contrast-100
+`,i=`
+  custom-font tw-font-semibold tw-text-gray-800 tw-text-center
+  tw-leading-[120%] tw-max-w-[90px] lg:tw-max-w-full
+`;function p({cdnUrl:w}){return(0,t.jsx)("div",{className:`
+        tw-mx-auto tw-flex tw-items-center tw-justify-around tw-w-full
+        tw-gap-[40px] lg:tw-gap-[50px]
+        tw-max-w-[1440px]
+        tw-px-[clamp(16px,3vw,40px)]
+        tw-pt-[1rem] tw-pb-[1rem]
+        lg:tw-pt-[3rem] lg:tw-pb-[2rem]
+        tw-bg-[#F2F2F2]
+      `,children:m.map(({id:l,img:o,desktopText:e,mobileText:n})=>(0,t.jsxs)("div",{className:"tw-flex tw-flex-col lg:tw-flex-row tw-items-center tw-gap-2",children:[(0,t.jsx)("img",{src:s({relativePath:o,cdnUrl:w}),alt:e,className:g,loading:"eager",fetchpriority:"high",width:"75",height:"50",decoding:"async"}),(0,t.jsx)("p",{className:`${i} tw-text-[12px] lg:tw-hidden`,children:n}),(0,t.jsx)("p",{className:`${i} tw-hidden lg:tw-block lg:tw-text-[20px]`,children:e})]},l))})}export{p as default};

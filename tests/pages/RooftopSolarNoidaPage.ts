@@ -24,16 +24,21 @@ export class RooftopSolarNoidaPage extends RooftopSolarPage {
 
   override async goto(): Promise<void> {
     // ── HAR replay/record ──
-    // In CI: replay recorded API responses so all sections render regardless of
-    // staging API accessibility. Locally with RECORD_HAR=1: record fresh responses.
+    // In CI: replay recorded responses hermetically. Bitbucket Pipelines can't
+    // reach cdndev.livguardsolar.com (where the JS/CSS bundles are hosted), so
+    // we must bundle stage + cdndev responses into the HAR for offline replay.
+    // Without this, React never hydrates and below-fold sections never render.
+    //
+    // Locally with RECORD_HAR=1: capture fresh responses from both domains.
+    const HAR_DOMAINS = /(stage|cdndev)\.livguardsolar\.com/;
     if (process.env.CI) {
       await this.page.routeFromHAR(HAR_PATH, {
-        url: /stage\.livguardsolar\.com/,
+        url: HAR_DOMAINS,
         notFound: 'fallback',
       });
     } else if (process.env.RECORD_HAR) {
       await this.page.routeFromHAR(HAR_PATH, {
-        url: /stage\.livguardsolar\.com/,
+        url: HAR_DOMAINS,
         update: true,
       });
     }

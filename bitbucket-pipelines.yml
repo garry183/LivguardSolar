@@ -8,6 +8,9 @@ pipelines:
   default:
     - step:
         name: Install and Run Visual Tests (noida)
+        # 4x runner: 4 vCPU / 16 GB → matches `workers: 4` in playwright.config.ts.
+        # Cuts wall-clock time for the 18-test suite from ~15 min (1 vCPU) to ~4 min.
+        size: 4x
         caches:
           - npm
         script:

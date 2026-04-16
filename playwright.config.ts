@@ -3,10 +3,13 @@ import { defineConfig, devices } from '@playwright/test';
 export default defineConfig({
   testDir: './tests',
   globalTeardown: './global-teardown.ts',
-  fullyParallel: false,
+  // Parallel in CI to minimise wall-clock time (Bitbucket runner is sized via
+  // `size: 4x` in bitbucket-pipelines.yml → 4 vCPU, 16 GB). Sequential locally
+  // so a human watching the terminal sees stable ordering.
+  fullyParallel: !!process.env.CI,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 1 : 0,
-  workers: process.env.CI ? '100%' : 10,
+  workers: process.env.CI ? 4 : 10,
   timeout: process.env.CI ? 120_000 : 60_000,
 
   expect: {

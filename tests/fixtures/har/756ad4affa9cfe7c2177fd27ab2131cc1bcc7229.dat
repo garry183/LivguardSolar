@@ -1,0 +1,1 @@
+import{a as n}from"https://cdndev.livguardsolar.com/build/_shared/chunk-4NKNWFQ3.js";import{d as e}from"https://cdndev.livguardsolar.com/build/_shared/chunk-UVX3UIWA.js";var t=e(n());function l({name:r,value:a,required:i,pattern:d}){return(0,t.jsx)("input",{type:"text",name:r,value:a,readOnly:!0,className:"tw-hidden",required:i,pattern:d})}export{l as a};
