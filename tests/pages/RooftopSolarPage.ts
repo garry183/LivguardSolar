@@ -183,15 +183,43 @@ export class RooftopSolarPage {
           node = node.parentElement;
         }
       }
+
+      // Un-hide every descendant of <main> and <footer> that's hidden via inline
+      // display:none / visibility:hidden. The Next.js SSR output hides below-the-fold
+      // sections until React scheduling un-hides them; in CI React can't hydrate in
+      // time, so we do it manually.
+      const roots = Array.from(document.querySelectorAll('main, footer, header'));
+      for (const root of roots) {
+        for (const el of Array.from(root.querySelectorAll<HTMLElement>('*'))) {
+          const cs = getComputedStyle(el);
+          if (cs.display === 'none') {
+            el.style.setProperty('display', 'block', 'important');
+          }
+          if (cs.visibility === 'hidden') {
+            el.style.setProperty('visibility', 'visible', 'important');
+          }
+          if (cs.opacity === '0') {
+            el.style.setProperty('opacity', '1', 'important');
+          }
+        }
+      }
     });
 
     // Inject style rule as safety net — catches CSS that re-hides after inline overrides.
+    // Note: the universal `main *, footer *` rule is intentionally broad because
+    // the Next.js SSR uses class-name-hash selectors to hide below-the-fold content.
     await this.page.addStyleTag({
       content: `
-        body, #__next, #root, #app, [id*="layout"], main, header, nav {
+        body, #__next, #root, #app, [id*="layout"], main, header, nav, footer {
           display: block !important;
           visibility: visible !important;
           opacity: 1 !important;
+        }
+        main *[style*="display: none"],
+        main *[style*="display:none"],
+        footer *[style*="display: none"],
+        footer *[style*="display:none"] {
+          display: revert !important;
         }
         [class*="loader"], [class*="spinner"], [class*="overlay"], [class*="preload"] {
           display: none !important;
