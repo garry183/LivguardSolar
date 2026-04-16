@@ -81,5 +81,61 @@ export class RooftopSolarNoidaPage extends RooftopSolarPage {
     } catch {
       // Banner absent or already dismissed — continue.
     }
+
+    // CI: actively wait for client-side rendered sections to hydrate.
+    // This scrolls the page and polls for key below-the-fold content.
+    if (process.env.CI) {
+      await this.waitForHydration(30_000);
+    }
+
+    // CI diagnostic: log page state so we can see what actually renders.
+    if (process.env.CI) {
+      const diag = await this.page.evaluate(() => ({
+        bodyTextLen: (document.body.innerText || '').length,
+        mainChildren: document.querySelectorAll('main > *').length,
+        sectionCount: document.querySelectorAll('section').length,
+        divInMainCount: document.querySelectorAll('main > div').length,
+        headings: Array.from(document.querySelectorAll('h1, h2, h3'))
+          .map(h => (h.textContent || '').trim().slice(0, 80))
+          .filter(Boolean),
+        hasFooter: !!document.querySelector('footer'),
+        hasBookSurvey: /book your free solar/i.test(document.body.innerText || ''),
+        hasPortfolio: /360 portfolio/i.test(document.body.innerText || ''),
+        hasFaq: /(common questions|questions and answers|faq)/i.test(
+          document.body.innerText || '',
+        ),
+        hasWhyLivguard: /why choose livguard/i.test(document.body.innerText || ''),
+      }));
+      console.log('[DIAG after goto()]', JSON.stringify(diag));
+    }
+  }
+
+  /**
+   * Wait for React to finish hydrating client-side sections.
+   * Polls until key below-the-fold content appears, or timeout.
+   */
+  async waitForHydration(timeoutMs = 30_000): Promise<void> {
+    const deadline = Date.now() + timeoutMs;
+    while (Date.now() < deadline) {
+      // Scroll progressively to trigger IntersectionObserver-based lazy mounts.
+      await this.page.evaluate(() => {
+        window.scrollTo(0, document.body.scrollHeight / 2);
+      });
+      await this.page.waitForTimeout(500);
+      await this.page.evaluate(() => {
+        window.scrollTo(0, document.body.scrollHeight);
+      });
+      await this.page.waitForTimeout(500);
+
+      const ready = await this.page.evaluate(() => {
+        const txt = document.body.innerText || '';
+        return (
+          !!document.querySelector('footer') &&
+          /360 portfolio|why choose livguard|book your free solar/i.test(txt)
+        );
+      });
+      if (ready) return;
+      await this.page.waitForTimeout(1_000);
+    }
   }
 }
