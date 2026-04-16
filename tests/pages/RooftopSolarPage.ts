@@ -150,7 +150,10 @@ export class RooftopSolarPage {
       // Banner absent or already dismissed — continue.
     }
 
-    await freezeAnimations(this.page);
+    // NOTE: Do NOT call freezeAnimations() here — it kills all setInterval/setTimeout,
+    // including React's scheduler. That prevents async sections (Book Survey, Portfolio,
+    // Why Livguard, FAQ, Footer) from ever mounting. Freeze is deferred until after
+    // triggerLazyLoad() completes in prepareForSnapshot().
   }
 
   /** Force all page content visible — removes loaders, overrides hidden CSS. */
@@ -218,8 +221,10 @@ export class RooftopSolarPage {
       await this.page.waitForTimeout(2_000);
     }
 
-    // 150 s covers slow async API responses on cold-cache Firefox / mobile-safari.
-    await locator.waitFor({ state: 'attached', timeout: 150_000 });
+    // 45 s is enough: if the section hasn't attached after triggerLazyLoad +
+    // full-page scroll, it isn't coming. Longer timeouts just waste pipeline minutes
+    // on failing tests (7 failures × 150 s × 2 retries = 35 wasted minutes).
+    await locator.waitFor({ state: 'attached', timeout: 45_000 });
 
     // Use evaluate to bypass Playwright's actionability check (elements inside
     // overflow:hidden carousels are in the DOM but not "actionable").
