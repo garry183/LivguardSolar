@@ -14,10 +14,16 @@ pipelines:
         caches:
           - npm
         script:
+          - echo "=== Public IP ===" && curl -s https://api.ipify.org && echo
+          - >-
+            echo "=== curl stage URL ===" &&
+            curl -v -A "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+            https://stage.livguardsolar.com/rooftop-solar-noida 2>&1 | head -80
           - npm ci
           - ./node_modules/.bin/playwright install --with-deps
           - >-
             bash -c 'set +e;
+            DEBUG=pw:api
             BASE_URL=https://stage.livguardsolar.com/
             ./node_modules/.bin/playwright test
             tests/visual/rooftop-solar-noida.visual.spec.ts

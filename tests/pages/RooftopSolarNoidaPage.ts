@@ -1,4 +1,4 @@
-import { mkdirSync } from 'fs';
+import { mkdirSync, existsSync, statSync } from 'fs';
 import path from 'path';
 import { Page } from '@playwright/test';
 import { RooftopSolarPage } from './RooftopSolarPage';
@@ -32,9 +32,19 @@ export class RooftopSolarNoidaPage extends RooftopSolarPage {
     // Locally with RECORD_HAR=1: capture fresh responses from both domains.
     const HAR_DOMAINS = /(stage|cdndev)\.livguardsolar\.com/;
     if (process.env.CI) {
+      const harExists = existsSync(HAR_PATH);
+      const harSize = harExists ? statSync(HAR_PATH).size : 'N/A';
+      console.log('[HAR] path=', HAR_PATH, 'exists=', harExists, 'size=', harSize);
+
+      // 'abort' surfaces HAR misses as net::ERR_FAILED (visible in requestfailed events).
       await this.page.routeFromHAR(HAR_PATH, {
         url: HAR_DOMAINS,
-        notFound: 'fallback',
+        notFound: 'abort',
+      });
+
+      // Log every failed request so we can see which URLs HAR couldn't serve.
+      this.page.on('requestfailed', req => {
+        console.log('[REQ FAILED]', req.url(), req.failure()?.errorText);
       });
     } else if (process.env.RECORD_HAR) {
       await this.page.routeFromHAR(HAR_PATH, {
