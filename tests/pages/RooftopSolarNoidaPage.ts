@@ -91,10 +91,16 @@ export class RooftopSolarNoidaPage extends RooftopSolarPage {
     // CI diagnostic: log page state so we can see what actually renders.
     if (process.env.CI) {
       const diag = await this.page.evaluate(() => ({
+        url: location.href,
+        title: document.title,
+        htmlLen: document.documentElement.outerHTML.length,
         bodyTextLen: (document.body.innerText || '').length,
+        bodyTextPreview: (document.body.innerText || '').slice(0, 300),
         mainChildren: document.querySelectorAll('main > *').length,
         sectionCount: document.querySelectorAll('section').length,
         divInMainCount: document.querySelectorAll('main > div').length,
+        allDivCount: document.querySelectorAll('div').length,
+        scriptCount: document.querySelectorAll('script').length,
         headings: Array.from(document.querySelectorAll('h1, h2, h3'))
           .map(h => (h.textContent || '').trim().slice(0, 80))
           .filter(Boolean),
@@ -105,6 +111,7 @@ export class RooftopSolarNoidaPage extends RooftopSolarPage {
           document.body.innerText || '',
         ),
         hasWhyLivguard: /why choose livguard/i.test(document.body.innerText || ''),
+        hasMnre: /MNRE/i.test(document.body.innerText || ''),
       }));
       console.log('[DIAG after goto()]', JSON.stringify(diag));
     }
