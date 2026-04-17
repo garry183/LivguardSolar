@@ -23,11 +23,10 @@ pipelines:
           - ./node_modules/.bin/playwright install
           - >-
             bash -c 'set +e;
-            DEBUG=pw:api
             BASE_URL=https://stage.livguardsolar.com/
             ./node_modules/.bin/playwright test
             tests/visual/rooftop-solar-noida.visual.spec.ts
-            --project=chromium-desktop
+            --workers=100%
             --update-snapshots;
             PW_EXIT=$?;
             npx ts-node brain/analyze.ts || true;

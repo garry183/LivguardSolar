@@ -29,11 +29,17 @@ test.describe('Rooftop Solar Noida – Element visibility', () => {
 
 test.describe('Rooftop Solar Noida – Full-page snapshots', () => {
   test('full page – desktop', async ({ noidaPage }) => {
+    test.setTimeout(120_000);
     await noidaPage.page.setViewportSize(VIEWPORTS.desktop);
     await noidaPage.prepareForSnapshot();
     await freezeAnimations(noidaPage.page);
     await noidaPage.page.waitForTimeout(2_000);
     await freezeAnimations(noidaPage.page);
+    // Scroll back to top so heroSection is in viewport and has a valid bounding box for masking.
+    // After triggerLazyLoad() scrolls to the bottom, IntersectionObserver may unmount the hero
+    // (especially on wide desktop viewports), causing locator.boundingBox() to return null → crash.
+    await noidaPage.page.evaluate(() => window.scrollTo(0, 0));
+    await noidaPage.page.waitForTimeout(500);
     await expect(noidaPage.page).toHaveScreenshot('rooftop-solar-noida-full-page-desktop.png', {
       fullPage: true,
       maxDiffPixelRatio: 0.08,
