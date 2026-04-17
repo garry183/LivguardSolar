@@ -1,4 +1,4 @@
-image: mcr.microsoft.com/playwright:v1.50.0-noble
+image: mcr.microsoft.com/playwright:v1.50.0-jammy
 
 definitions:
   caches:
@@ -20,7 +20,7 @@ pipelines:
             curl -v -A "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
             https://stage.livguardsolar.com/rooftop-solar-noida 2>&1 | head -80
           - npm ci
-          - ./node_modules/.bin/playwright install --with-deps
+          - ./node_modules/.bin/playwright install
           - >-
             bash -c 'set +e;
             DEBUG=pw:api

@@ -1,0 +1,25 @@
+import{a as e}from"https://cdndev.livguardsolar.com/build/_shared/chunk-3X3UATGP.js";import{a as l}from"https://cdndev.livguardsolar.com/build/_shared/chunk-4NKNWFQ3.js";import"https://cdndev.livguardsolar.com/build/_shared/chunk-RN63NAG7.js";import{d as w}from"https://cdndev.livguardsolar.com/build/_shared/chunk-UVX3UIWA.js";var t=w(l()),s=({cdnUrl:a})=>{let o=e({relativePath:"/images/solar-person.webp",cdnUrl:a}),n=e({relativePath:"/images/readyToGoSolarBg.webp",cdnUrl:a});return(0,t.jsx)("section",{"aria-labelledby":"ready-to-go-solar-heading",className:`
+                tw-w-full
+                lg:tw-max-w-full
+                tw-mx-auto
+                lg:tw-max-h-[420px]
+                lg:tw-min-h-[457px] tw-min-h-[435px]
+                tw-py-[60px] tw-px-[24px]
+                md:tw-p-[80px]
+                tw-flex tw-flex-col
+                tw-gap-[60px]
+                tw-bg-no-repeat tw-bg-cover tw-bg-center
+                tw-relative tw-overflow-hidden tw-text-white
+            `,style:{backgroundImage:`
+                    linear-gradient(180deg, rgba(234,31,39,0.8) 0%, rgba(234,31,39,0.9) 100%),
+                    url(${n})
+                `},children:(0,t.jsx)("div",{className:"tw-relative tw-max-w-[1440px] tw-h-full tw-mx-auto",children:(0,t.jsxs)("div",{className:"tw-flex tw-h-full tw-flex-col tw-justify-between lg:tw-flex-row lg:tw-items-center",children:[(0,t.jsxs)("div",{className:"tw-w-full lg:tw-w-3/4 tw-text-center lg:tw-text-left lg:tw-mb-[100px]",children:[(0,t.jsx)("h2",{id:"ready-to-go-solar-heading",className:"custom-font tw-font-semibold lg:tw-text-[44px] tw-text-[24px] lg:tw-leading-[140%] tw-leading-[120%]",children:"Ready to Go Solar?"}),(0,t.jsx)("div",{className:`tw-mt-4 tw-mb-6 tw-h-[2px] tw-max-w-[350px]
+                            tw-bg-[linear-gradient(90deg,rgba(255,255,255,0)_0%,#ffffff_50.96%,rgba(255,255,255,0)_97.6%)]
+                            tw-opacity-70`}),(0,t.jsx)("p",{className:"custom-font tw-font-medium tw-text-[20px] lg:tw-text-[24px] tw-leading-[120%] lg:tw-w-full tw-w-[312px]",children:"Join thousands of families and businesses who have already made the switch to clean, renewable energy and are saving thousands every year."}),(0,t.jsx)("button",{type:"button",onClick:r=>{location.pathname.includes("/rooftop-solar")||location.pathname==="/free-consultation"?(r.preventDefault(),window.scrollTo({top:200,behavior:"smooth"})):window.location.href="/free-consultation"},className:`
+                                lg:tw-mt-8 tw-mt-[2.25rem] tw-inline-flex tw-items-center tw-justify-center
+                                tw-rounded-[10px] tw-bg-black
+                                tw-px-6 tw-py-3
+                                tw-text-[14px] tw-font-semibold tw-uppercase
+                                tw-tracking-[0.08em]
+                                hover:tw-bg-[#222]
+                            `,children:(0,t.jsx)("span",{className:"custom-font",children:"Book Free Site Survey"})})]}),(0,t.jsx)("div",{className:"tw-hidden lg:tw-flex lg:tw-w-1/4 tw-justify-end lg:tw-pt-[30px]",children:(0,t.jsx)("img",{src:o,alt:"Solar expert",className:"tw-w-[200px] tw-h-[350px] tw-object-contain"})})]})})})},p=s;export{p as default};

@@ -29,6 +29,14 @@ export default defineConfig({
     screenshot: 'only-on-failure',
     video: 'retain-on-failure',
     trace: 'retain-on-failure',
+    launchOptions: {
+      args: [
+        '--font-render-hinting=none',
+        '--disable-font-subpixel-positioning',
+        '--disable-lcd-text',
+        '--force-device-scale-factor=1',
+      ],
+    },
   },
 
   snapshotPathTemplate:

@@ -1,0 +1,22 @@
+import{a as o}from"https://cdndev.livguardsolar.com/build/_shared/chunk-3X3UATGP.js";import{b as l}from"https://cdndev.livguardsolar.com/build/_shared/chunk-4NG4MSSN.js";import"https://cdndev.livguardsolar.com/build/_shared/chunk-MTWW3JRQ.js";import"https://cdndev.livguardsolar.com/build/_shared/chunk-T3ODVBNU.js";import"https://cdndev.livguardsolar.com/build/_shared/chunk-PPAMDHNT.js";import"https://cdndev.livguardsolar.com/build/_shared/chunk-G7CMYWIL.js";import"https://cdndev.livguardsolar.com/build/_shared/chunk-H4WEOG7Q.js";import"https://cdndev.livguardsolar.com/build/_shared/chunk-JQ3IQUQT.js";import"https://cdndev.livguardsolar.com/build/_shared/chunk-3ISTAWNN.js";import"https://cdndev.livguardsolar.com/build/_shared/chunk-4QLGYKSL.js";import{a as w}from"https://cdndev.livguardsolar.com/build/_shared/chunk-4NKNWFQ3.js";import"https://cdndev.livguardsolar.com/build/_shared/chunk-RN63NAG7.js";import{d as r}from"https://cdndev.livguardsolar.com/build/_shared/chunk-UVX3UIWA.js";var t=r(w());function N({cdnUrl:n,sectionRef:c,recaptchaSiteKey:b,actionData:p,pageUrl:m,pageName:g}){let d=["Livguard nationwide service network","24/7 system monitoring and support","Government subsidy assistance","Net metering setup included","5 Years solution warranty"],y=o({relativePath:"/images/solar-person.webp",cdnUrl:n}),x=o({relativePath:"/images/mobileCheck.png",cdnUrl:n}),f=a=>{let s=String(a||""),i=["Livguard"],u=new RegExp(`(${i.map(e=>e.replace(/[.*+?^${}()|[\]\\]/g,"\\$&")).join("|")})`,"gi");return s.split(u).map((e,v)=>i.some(h=>h.toLowerCase()===e.toLowerCase())?(0,t.jsx)("strong",{className:"custom-font tw-text-[18px] tw-font-[700]",children:e},v):e)};return(0,t.jsxs)("section",{ref:c,className:"tw-relative tw-bg-[#212121] tw-py-12 tw-px-4 tw-overflow-hidden tw-text-white",children:[(0,t.jsxs)("div",{className:"tw-text-center tw-mb-10 lg:tw-mb-16",children:[(0,t.jsxs)("h2",{className:"custom-font tw-text-white tw-text-2xl lg:tw-text-[32px] tw-font-bold tw-tracking-wide",children:["Book Your"," ",(0,t.jsx)("span",{className:"custom-font tw-text-white",children:"Free Solar Consultation"})," Now"]}),(0,t.jsx)("div",{className:"tw-flex tw-justify-center tw-mt-2",children:(0,t.jsx)("div",{className:"tw-h-[2px] tw-w-40 tw-bg-gradient-to-r tw-from-transparent tw-via-[#E33E3E] tw-to-transparent"})})]}),(0,t.jsxs)("div",{className:"tw-max-w-[360px] tw-mx-auto tw-flex tw-flex-col tw-gap-6 tw-items-center",children:[(0,t.jsx)("div",{className:"tw-relative tw-w-full tw-flex tw-justify-end"}),(0,t.jsx)("ul",{className:"tw-flex tw-flex-col tw-gap-4",children:d.map((a,s)=>(0,t.jsxs)("li",{className:"custom-font tw-flex tw-items-start tw-gap-3",children:[(0,t.jsx)("img",{src:x,alt:"Check",className:"tw-w-6 tw-h-6 tw-object-contain"}),(0,t.jsx)("span",{className:"custom-font tw-text-white tw-font-medium tw-text-[16px]",children:f(a)})]},s))}),(0,t.jsx)("div",{className:`
+                    tw-bg-[url('/images/solar-person.webp')]
+                    tw-bg-no-repeat
+                    tw-bg-contain
+                    tw-bg-center
+                    tw-h-[170px]
+                    tw-w-[170px]
+                    tw-absolute
+
+                    /* Mobile (<768px) */
+                    tw-left-[82%]
+                    tw-top-[255px]
+                    -tw-translate-x-1/2
+
+                    /* Tablet (768px\u20131023px) */
+                    md:tw-left-[62%]
+                    md:tw-top-[225px]
+
+                    /* Desktop (\u22651024px) */
+                    lg:tw-left-[218px]
+                    lg:tw-top-[250px]
+                    lg:tw-translate-x-0`}),(0,t.jsx)("div",{"data-variant":"red",className:"lgs-ltd-content-right-w-full  tw-z-[1] !tw-m-0 tw-justify-self-center",children:(0,t.jsx)("div",{className:"lgs-ltd-content-right-w-full2 tw-order-1 lg:tw-order-2 tw-justify-self-center",children:(0,t.jsx)(l,{position:2,actionData:p,pageUrl:m,pageName:g})})})]})]})}export{N as default};
