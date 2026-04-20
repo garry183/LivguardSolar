@@ -30,12 +30,12 @@ test.describe('Solar for Home – Full-page snapshots', () => {
   test.describe.configure({ timeout: 180_000 });
 
   test('full page – desktop', async ({ solarForHomePage }) => {
-    // Full-page desktop is non-deterministic: API-driven sections (FAQ, testimonials)
-    // load conditionally and page height alternates between runs. Section-level tests
-    // provide equivalent coverage with stable, isolated screenshots.
-    test.skip(true, 'Non-deterministic: API-driven page height varies between runs; section-level tests cover this fully');
+    // HAR replay makes this deterministic — all API responses are hermetically sealed.
+    test.setTimeout(180_000);
     await solarForHomePage.page.setViewportSize(VIEWPORTS.desktop);
     await solarForHomePage.prepareForSnapshot();
+    await solarForHomePage.page.evaluate(() => window.scrollTo(0, 0));
+    await solarForHomePage.page.waitForTimeout(500);
     await freezeAnimations(solarForHomePage.page);
     await solarForHomePage.page.waitForTimeout(2_000);
     await freezeAnimations(solarForHomePage.page);
@@ -52,11 +52,12 @@ test.describe('Solar for Home – Full-page snapshots', () => {
   });
 
   test('full page – mobile', async ({ solarForHomePage }) => {
-    // Full-page mobile is non-deterministic: page height and API-driven content
-    // differ between runs, causing 13%+ pixel diff. Section-level tests cover this fully.
-    test.skip(true, 'Non-deterministic: API-driven page height varies between runs; section-level tests cover this fully');
+    // HAR replay makes this deterministic — all API responses are hermetically sealed.
+    test.setTimeout(180_000);
     await solarForHomePage.page.setViewportSize(VIEWPORTS.mobile);
     await solarForHomePage.prepareForSnapshot();
+    await solarForHomePage.page.evaluate(() => window.scrollTo(0, 0));
+    await solarForHomePage.page.waitForTimeout(500);
     await freezeAnimations(solarForHomePage.page);
     await solarForHomePage.page.waitForTimeout(2_000);
     await freezeAnimations(solarForHomePage.page);

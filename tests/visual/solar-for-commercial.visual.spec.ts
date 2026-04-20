@@ -53,12 +53,14 @@ test.describe('Solar for Commercial – Full-page snapshots', () => {
 
   test('full page – mobile', async ({ solarForCommercialPage }) => {
     test.setTimeout(300_000);
-    // Full-page mobile is non-deterministic: page height varies (10725 vs 10399 px)
-    // depending on whether API-driven sections complete loading, causing 13%+ diff.
-    // Section-level tests cover all sections with stable isolated screenshots.
-    test.skip(true, 'Non-deterministic: API-driven page height varies between runs; section-level tests cover this fully');
+    // HAR replay makes this deterministic — all API responses are hermetically sealed.
     await solarForCommercialPage.page.setViewportSize(VIEWPORTS.mobile);
     await solarForCommercialPage.prepareForSnapshot();
+    await solarForCommercialPage.page.evaluate(() => window.scrollTo(0, 0));
+    await solarForCommercialPage.page.waitForTimeout(500);
+    await freezeAnimations(solarForCommercialPage.page);
+    await solarForCommercialPage.page.waitForTimeout(2_000);
+    await freezeAnimations(solarForCommercialPage.page);
     await expect(solarForCommercialPage.page).toHaveScreenshot(
       'solar-for-commercial-full-page-mobile.png',
       {

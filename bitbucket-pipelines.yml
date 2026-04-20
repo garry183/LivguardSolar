@@ -7,57 +7,6 @@ definitions:
 pipelines:
   default:
     - step:
-        name: Install and Run Visual Tests (noida)
-        # 4x runner: 4 vCPU / 16 GB → matches `workers: 4` in playwright.config.ts.
-        # Cuts wall-clock time for the 18-test suite from ~15 min (1 vCPU) to ~4 min.
-        size: 4x
-        caches:
-          - npm
-        script:
-          - echo "=== Public IP ===" && curl -s https://api.ipify.org && echo
-          - >-
-            echo "=== curl stage URL ===" &&
-            curl -v -A "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
-            https://stage.livguardsolar.com/rooftop-solar-noida 2>&1 | head -80
-          - npm ci
-          - ./node_modules/.bin/playwright install
-          - >-
-            bash -c 'set +e;
-            BASE_URL=https://stage.livguardsolar.com/
-            ./node_modules/.bin/playwright test
-            tests/visual/rooftop-solar-noida.visual.spec.ts
-            --workers=100%
-            --update-snapshots;
-            PW_EXIT=$?;
-            npx ts-node brain/analyze.ts || true;
-            exit $PW_EXIT'
-        artifacts:
-          - reports/**
-          - allure-results/**
-          - tests/visual/__snapshots__/**
-    - step:
-        name: Visual Tests (jaipur)
-        size: 4x
-        caches:
-          - npm
-        script:
-          - npm ci
-          - ./node_modules/.bin/playwright install
-          - >-
-            bash -c 'set +e;
-            BASE_URL=https://stage.livguardsolar.com/
-            ./node_modules/.bin/playwright test
-            tests/visual/rooftop-solar-jaipur.visual.spec.ts
-            --workers=100%
-            --update-snapshots;
-            PW_EXIT=$?;
-            npx ts-node brain/analyze.ts || true;
-            exit $PW_EXIT'
-        artifacts:
-          - reports/**
-          - allure-results/**
-          - tests/visual/__snapshots__/**
-    - step:
         name: Visual Tests (rooftop-solar)
         size: 4x
         caches:
@@ -70,6 +19,70 @@ pipelines:
             BASE_URL=https://stage.livguardsolar.com/
             ./node_modules/.bin/playwright test
             tests/visual/rooftop-solar.visual.spec.ts
+            --workers=100%
+            --update-snapshots;
+            PW_EXIT=$?;
+            npx ts-node brain/analyze.ts || true;
+            exit $PW_EXIT'
+        artifacts:
+          - reports/**
+          - allure-results/**
+          - tests/visual/__snapshots__/**
+    - step:
+        name: Visual Tests (homepage)
+        size: 4x
+        caches:
+          - npm
+        script:
+          - npm ci
+          - ./node_modules/.bin/playwright install
+          - >-
+            bash -c 'set +e;
+            BASE_URL=https://stage.livguardsolar.com/
+            ./node_modules/.bin/playwright test
+            tests/visual/homepage.visual.spec.ts
+            --workers=100%
+            --update-snapshots;
+            PW_EXIT=$?;
+            npx ts-node brain/analyze.ts || true;
+            exit $PW_EXIT'
+        artifacts:
+          - reports/**
+          - allure-results/**
+          - tests/visual/__snapshots__/**
+    - step:
+        name: Visual Tests (solar-for-home)
+        size: 4x
+        caches:
+          - npm
+        script:
+          - npm ci
+          - ./node_modules/.bin/playwright install
+          - >-
+            bash -c 'set +e;
+            ./node_modules/.bin/playwright test
+            tests/visual/solar-for-home.visual.spec.ts
+            --workers=100%
+            --update-snapshots;
+            PW_EXIT=$?;
+            npx ts-node brain/analyze.ts || true;
+            exit $PW_EXIT'
+        artifacts:
+          - reports/**
+          - allure-results/**
+          - tests/visual/__snapshots__/**
+    - step:
+        name: Visual Tests (solar-for-commercial)
+        size: 4x
+        caches:
+          - npm
+        script:
+          - npm ci
+          - ./node_modules/.bin/playwright install
+          - >-
+            bash -c 'set +e;
+            ./node_modules/.bin/playwright test
+            tests/visual/solar-for-commercial.visual.spec.ts
             --workers=100%
             --update-snapshots;
             PW_EXIT=$?;

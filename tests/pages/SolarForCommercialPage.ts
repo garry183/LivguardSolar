@@ -1,5 +1,9 @@
+import { mkdirSync, existsSync, statSync } from 'fs';
+import path from 'path';
 import { Page, Locator } from '@playwright/test';
 import { freezeAnimations, triggerLazyLoad, waitForAllImages } from '../utils/visualHelpers';
+
+const HAR_PATH = path.resolve(__dirname, '..', 'fixtures', 'har', 'solar-for-commercial.har');
 
 export class SolarForCommercialPage {
   readonly page: Page;
@@ -79,21 +83,57 @@ export class SolarForCommercialPage {
   }
 
   async goto(): Promise<void> {
+    // ── HAR replay/record ──
+    // In CI: replay recorded responses hermetically. Bitbucket Pipelines can't
+    // reach cdndev.livguardsolar.com (where the JS/CSS bundles are hosted), so
+    // we must bundle stage + cdndev responses into the HAR for offline replay.
+    // Without this, React never hydrates and below-fold sections never render.
+    //
+    // Locally with RECORD_HAR=1: capture fresh responses from both domains.
+    const HAR_DOMAINS = /(stage|cdndev)\.livguardsolar\.com/;
+    if (process.env.CI) {
+      const harExists = existsSync(HAR_PATH);
+      const harSize = harExists ? statSync(HAR_PATH).size : 'N/A';
+      console.log('[HAR] path=', HAR_PATH, 'exists=', harExists, 'size=', harSize);
+
+      // 'abort' surfaces HAR misses as net::ERR_FAILED (visible in requestfailed events).
+      await this.page.routeFromHAR(HAR_PATH, {
+        url: HAR_DOMAINS,
+        notFound: 'abort',
+      });
+
+      // Log every failed request so we can see which URLs HAR couldn't serve.
+      this.page.on('requestfailed', req => {
+        console.log('[REQ FAILED]', req.url(), req.failure()?.errorText);
+      });
+    } else if (process.env.RECORD_HAR) {
+      await this.page.routeFromHAR(HAR_PATH, {
+        url: HAR_DOMAINS,
+        update: true,
+      });
+    }
+
     // Navigate directly to the staging URL — this page object targets the
     // staging environment, not the production baseURL set in playwright.config.ts.
     await this.page.goto('https://stage.livguardsolar.com/solar-for-commercial', {
       waitUntil: 'domcontentloaded',
     });
 
-    // networkidle fires quickly on Chromium/WebKit; Firefox keeps analytics and
-    // polling connections open indefinitely so networkidle never fires there.
-    // Cap the wait at 8 s — SSR content is visible well before that — then
-    // fall back to a short settled-render pause so we don't waste ~30 s per
-    // Firefox test (which would crowd out the lazy-load and scroll budget).
+    // Wait for networkidle — with third-party scripts blocked and HAR replay,
+    // this should resolve quickly on both local and CI.
     try {
-      await this.page.waitForLoadState('networkidle', { timeout: 8_000 });
+      await this.page.waitForLoadState('networkidle', { timeout: 15_000 });
     } catch {
-      await this.page.waitForTimeout(2_000);
+      await this.page.waitForTimeout(3_000);
+    }
+
+    // CI diagnostic: capture page state after networkidle.
+    if (process.env.CI) {
+      mkdirSync('reports/test-results', { recursive: true });
+      await this.page.screenshot({
+        path: 'reports/test-results/debug-after-networkidle-solar-for-commercial.png',
+        fullPage: false,
+      });
     }
 
     // The page is fully client-rendered (Next.js): the SSR HTML only contains
@@ -106,15 +146,41 @@ export class SolarForCommercialPage {
       .waitFor({ timeout: 30_000 })
       .catch(() => {});
 
-    // Dismiss cookie consent banner so it does not block scroll events or gate
-    // the rendering of cookie-gated page sections (particularly in Chromium).
+    // Dismiss cookie consent banner.
     try {
       await this.page.getByRole('button', { name: /got it/i }).click({ timeout: 3_000 });
     } catch {
       // Banner absent or already dismissed — continue.
     }
 
-    await freezeAnimations(this.page);
+    // CI: actively wait for client-side rendered sections to hydrate.
+    // This scrolls the page and polls for key below-the-fold content.
+    if (process.env.CI) {
+      await this.waitForHydration(30_000);
+    }
+
+    // CI diagnostic: log page state so we can see what actually renders.
+    if (process.env.CI) {
+      const diag = await this.page.evaluate(() => ({
+        url: location.href,
+        title: document.title,
+        htmlLen: document.documentElement.outerHTML.length,
+        bodyTextLen: (document.body.innerText || '').length,
+        mainChildren: document.querySelectorAll('main > *').length,
+        sectionCount: document.querySelectorAll('section').length,
+        scriptCount: document.querySelectorAll('script').length,
+        headings: Array.from(document.querySelectorAll('h1, h2, h3'))
+          .map(h => (h.textContent || '').trim().slice(0, 80))
+          .filter(Boolean),
+        hasFooter: !!document.querySelector('footer'),
+        hasHero: true,
+        hasSimpleSteps: /simple steps/i.test(document.body.innerText || ''),
+        hasPortfolio: /360 portfolio/i.test(document.body.innerText || ''),
+        hasWhyLivguard: /why livguard/i.test(document.body.innerText || ''),
+        hasTestimonials: /happy customers/i.test(document.body.innerText || ''),
+      }));
+      console.log('[DIAG after goto()]', JSON.stringify(diag));
+    }
   }
 
   async prepareForSnapshot(): Promise<void> {
@@ -125,6 +191,35 @@ export class SolarForCommercialPage {
     // Applying it in prepareForSnapshot causes Firefox's IntersectionObserver to
     // re-fire on the layout change, unmounting sections and breaking later scrollToSection
     // calls. It is applied in the full-page snapshot tests, right before toHaveScreenshot.
+  }
+
+  /**
+   * Wait for React to finish hydrating client-side sections.
+   * Polls until key below-the-fold content appears, or timeout.
+   */
+  async waitForHydration(timeoutMs = 30_000): Promise<void> {
+    const deadline = Date.now() + timeoutMs;
+    while (Date.now() < deadline) {
+      // Scroll progressively to trigger IntersectionObserver-based lazy mounts.
+      await this.page.evaluate(() => {
+        window.scrollTo(0, document.body.scrollHeight / 2);
+      });
+      await this.page.waitForTimeout(500);
+      await this.page.evaluate(() => {
+        window.scrollTo(0, document.body.scrollHeight);
+      });
+      await this.page.waitForTimeout(500);
+
+      const ready = await this.page.evaluate(() => {
+        const txt = document.body.innerText || '';
+        return (
+          !!document.querySelector('footer') &&
+          /360 portfolio|why livguard|happy customers/i.test(txt)
+        );
+      });
+      if (ready) return;
+      await this.page.waitForTimeout(1_000);
+    }
   }
 
   async scrollToSection(locator: Locator): Promise<void> {
