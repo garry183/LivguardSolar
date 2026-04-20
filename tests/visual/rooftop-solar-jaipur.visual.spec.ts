@@ -30,13 +30,17 @@ test.describe('Rooftop Solar Jaipur – Element visibility', () => {
 
 test.describe('Rooftop Solar Jaipur – Full-page snapshots', () => {
   test('full page – desktop', async ({ jaipurPage }) => {
-    // Non-deterministic: API-driven sections cause page height variance between runs.
-    test.skip(true, 'Non-deterministic: API-driven page height varies between runs; section-level tests cover this fully');
+    test.setTimeout(120_000);
     await jaipurPage.page.setViewportSize(VIEWPORTS.desktop);
     await jaipurPage.prepareForSnapshot();
     await freezeAnimations(jaipurPage.page);
     await jaipurPage.page.waitForTimeout(2_000);
     await freezeAnimations(jaipurPage.page);
+    // Scroll back to top so heroSection is in viewport and has a valid bounding box for masking.
+    // After triggerLazyLoad() scrolls to the bottom, IntersectionObserver may unmount the hero
+    // (especially on wide desktop viewports), causing locator.boundingBox() to return null → crash.
+    await jaipurPage.page.evaluate(() => window.scrollTo(0, 0));
+    await jaipurPage.page.waitForTimeout(500);
     await expect(jaipurPage.page).toHaveScreenshot('rooftop-solar-jaipur-full-page-desktop.png', {
       fullPage: true,
       maxDiffPixelRatio: 0.08,
@@ -45,7 +49,7 @@ test.describe('Rooftop Solar Jaipur – Full-page snapshots', () => {
   });
 
   test('full page – mobile', async ({ jaipurPage }) => {
-    test.skip(true, 'Non-deterministic: API-driven page height varies between runs; section-level tests cover this fully');
+    test.setTimeout(120_000);
     await jaipurPage.page.setViewportSize(VIEWPORTS.mobile);
     await jaipurPage.prepareForSnapshot();
     await freezeAnimations(jaipurPage.page);

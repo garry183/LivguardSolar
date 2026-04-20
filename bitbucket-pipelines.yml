@@ -35,3 +35,25 @@ pipelines:
           - reports/**
           - allure-results/**
           - tests/visual/__snapshots__/**
+    - step:
+        name: Visual Tests (jaipur)
+        size: 4x
+        caches:
+          - npm
+        script:
+          - npm ci
+          - ./node_modules/.bin/playwright install
+          - >-
+            bash -c 'set +e;
+            BASE_URL=https://stage.livguardsolar.com/
+            ./node_modules/.bin/playwright test
+            tests/visual/rooftop-solar-jaipur.visual.spec.ts
+            --workers=100%
+            --update-snapshots;
+            PW_EXIT=$?;
+            npx ts-node brain/analyze.ts || true;
+            exit $PW_EXIT'
+        artifacts:
+          - reports/**
+          - allure-results/**
+          - tests/visual/__snapshots__/**
