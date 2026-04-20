@@ -110,6 +110,7 @@ export class SolarForCommercialPage {
       await this.page.routeFromHAR(HAR_PATH, {
         url: HAR_DOMAINS,
         update: true,
+        updateContent: 'embed', // store response bodies inline so HAR works offline in CI
       });
     }
 
