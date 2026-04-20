@@ -30,11 +30,11 @@ test.describe('Rooftop Solar – Element visibility', () => {
 
 test.describe('Rooftop Solar – Full-page snapshots', () => {
   test('full page – desktop', async ({ rooftopSolarPage }) => {
-    // Non-deterministic: API-driven sections cause page height variance between runs.
-    // Section-level tests provide equivalent stable coverage.
-    test.skip(true, 'Non-deterministic: API-driven page height varies between runs; section-level tests cover this fully');
+    // HAR replay makes this deterministic — all API responses are hermetically sealed.
     await rooftopSolarPage.page.setViewportSize(VIEWPORTS.desktop);
     await rooftopSolarPage.prepareForSnapshot();
+    await rooftopSolarPage.page.evaluate(() => window.scrollTo(0, 0));
+    await rooftopSolarPage.page.waitForTimeout(500);
     await freezeAnimations(rooftopSolarPage.page);
     await rooftopSolarPage.page.waitForTimeout(2_000);
     await freezeAnimations(rooftopSolarPage.page);
@@ -46,9 +46,11 @@ test.describe('Rooftop Solar – Full-page snapshots', () => {
   });
 
   test('full page – mobile', async ({ rooftopSolarPage }) => {
-    test.skip(true, 'Non-deterministic: API-driven page height varies between runs; section-level tests cover this fully');
+    // HAR replay makes this deterministic — all API responses are hermetically sealed.
     await rooftopSolarPage.page.setViewportSize(VIEWPORTS.mobile);
     await rooftopSolarPage.prepareForSnapshot();
+    await rooftopSolarPage.page.evaluate(() => window.scrollTo(0, 0));
+    await rooftopSolarPage.page.waitForTimeout(500);
     await freezeAnimations(rooftopSolarPage.page);
     await rooftopSolarPage.page.waitForTimeout(2_000);
     await freezeAnimations(rooftopSolarPage.page);
