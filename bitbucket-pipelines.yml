@@ -88,6 +88,7 @@ pipelines:
             ./node_modules/.bin/playwright test
             tests/visual/solar-for-commercial.visual.spec.ts
             --project=chromium-desktop
+            --project=mobile-chrome
             --workers=100%;
             PW_EXIT=$?;
             npx ts-node brain/analyze.ts || true;
