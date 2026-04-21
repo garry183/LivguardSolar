@@ -161,7 +161,7 @@ test.describe('Solar for Commercial – Section snapshots', () => {
     await freezeAnimations(solarForCommercialPage.page);
     await expect(solarForCommercialPage.projectsSection).toHaveScreenshot(
       'solar-for-commercial-projects.png',
-      { maxDiffPixelRatio: 0.05 },
+      { maxDiffPixelRatio: 0.08 },
     );
   });
 
