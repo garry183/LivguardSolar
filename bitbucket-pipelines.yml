@@ -59,7 +59,7 @@ pipelines:
           - npm
         script:
           - npm ci
-          - ./node_modules/.bin/playwright install chromium
+          - ./node_modules/.bin/playwright install chromium webkit
           - >-
             bash -c 'set +e;
             ./node_modules/.bin/playwright test
