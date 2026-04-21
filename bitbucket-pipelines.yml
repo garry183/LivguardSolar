@@ -64,9 +64,11 @@ pipelines:
             bash -c 'set +e;
             ./node_modules/.bin/playwright test
             tests/visual/solar-for-home.visual.spec.ts
+            --project=chromium-desktop
+            --project=mobile-chrome
             --project=mobile-safari
             --workers=100%
-            --update-snapshots;
+            # --update-snapshots;
             PW_EXIT=$?;
             npx ts-node brain/analyze.ts || true;
             exit $PW_EXIT'
