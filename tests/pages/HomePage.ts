@@ -1,5 +1,9 @@
+import { mkdirSync, existsSync, statSync } from 'fs';
+import path from 'path';
 import { Page, Locator } from '@playwright/test';
 import { freezeAnimations, triggerLazyLoad, waitForAllImages } from '../utils/visualHelpers';
+
+const HAR_PATH = path.resolve(__dirname, '..', 'fixtures', 'har', 'homepage.har');
 
 export class HomePage {
   readonly page: Page;
@@ -59,32 +63,102 @@ export class HomePage {
   }
 
   async goto(): Promise<void> {
-    await this.page.goto('/', { waitUntil: 'domcontentloaded' });
-    // networkidle fires quickly on Chromium/WebKit; Firefox keeps analytics and
-    // polling connections open indefinitely so networkidle never fires there.
-    // Cap the wait at 8 s — SSR content is visible well before that — then
-    // fall back to a short settled-render pause so we don't waste ~30 s per
-    // Firefox test (which would crowd out the lazy-load and scroll budget).
-    try {
-      await this.page.waitForLoadState('networkidle', { timeout: 8_000 });
-    } catch {
-      await this.page.waitForTimeout(2_000);
+    // ── HAR replay/record ──
+    // In CI: replay recorded responses hermetically. Bitbucket Pipelines can't
+    // reach cdndev.livguardsolar.com (where the JS/CSS bundles are hosted), so
+    // we must bundle stage + cdndev responses into the HAR for offline replay.
+    // Without this, React never hydrates and below-fold sections never render.
+    //
+    // Locally with RECORD_HAR=1: capture fresh responses from both domains.
+    const HAR_DOMAINS = /(stage|cdndev)\.livguardsolar\.com/;
+    if (process.env.CI) {
+      const harExists = existsSync(HAR_PATH);
+      const harSize = harExists ? statSync(HAR_PATH).size : 'N/A';
+      console.log('[HAR] path=', HAR_PATH, 'exists=', harExists, 'size=', harSize);
+
+      await this.page.routeFromHAR(HAR_PATH, {
+        url: HAR_DOMAINS,
+        notFound: 'abort',
+      });
+
+      this.page.on('requestfailed', req => {
+        console.log('[REQ FAILED]', req.url(), req.failure()?.errorText);
+      });
+    } else if (process.env.RECORD_HAR) {
+      await this.page.routeFromHAR(HAR_PATH, {
+        url: HAR_DOMAINS,
+        update: true,
+        updateContent: 'embed',
+      });
     }
-    // The page is fully client-rendered (Next.js): the SSR HTML only contains
-    // the nav and a hidden H1. Wait for the hero <section> to appear as a
-    // reliable signal that the JavaScript bundle has loaded and React has
-    // hydrated — without this, fast-firing tests (especially the first Firefox
-    // test, whose JS bundle competes with the parallel Chromium test over
-    // bandwidth) would scroll through a skeleton DOM and never find any content.
-    await this.page.locator('section').first().waitFor({ timeout: 30_000 }).catch(() => {});
-    // Dismiss cookie consent banner so it does not block scroll events or gate
-    // the rendering of cookie-gated page sections (particularly in Chromium).
+
+    await this.page.goto('https://stage.livguardsolar.com/', { waitUntil: 'domcontentloaded' });
+
+    try {
+      await this.page.waitForLoadState('networkidle', { timeout: 15_000 });
+    } catch {
+      await this.page.waitForTimeout(3_000);
+    }
+
+    // CI diagnostic: capture page state after networkidle.
+    if (process.env.CI) {
+      mkdirSync('reports/test-results', { recursive: true });
+      await this.page.screenshot({
+        path: 'reports/test-results/debug-after-networkidle-homepage.png',
+        fullPage: false,
+      });
+    }
+
+    await this.page.locator('section, div[class]').first().waitFor({ timeout: 30_000 }).catch(() => {});
+
     try {
       await this.page.getByRole('button', { name: /got it/i }).click({ timeout: 3_000 });
     } catch {
       // Banner absent or already dismissed — continue.
     }
+
+    if (process.env.CI) {
+      await this.waitForHydration(30_000);
+    }
+
+    if (process.env.CI) {
+      const diag = await this.page.evaluate(() => ({
+        url: location.href,
+        title: document.title,
+        htmlLen: document.documentElement.outerHTML.length,
+        bodyTextLen: (document.body.innerText || '').length,
+        sectionCount: document.querySelectorAll('section').length,
+        headings: Array.from(document.querySelectorAll('h1, h2, h3'))
+          .map(h => (h.textContent || '').trim().slice(0, 80))
+          .filter(Boolean),
+        hasFooter: !!document.querySelector('footer'),
+        hasHero: /reliable solar/i.test(document.body.innerText || ''),
+        hasPortfolio: /360 portfolio/i.test(document.body.innerText || ''),
+      }));
+      console.log('[DIAG after goto()]', JSON.stringify(diag));
+    }
+
     await freezeAnimations(this.page);
+  }
+
+  async waitForHydration(timeoutMs = 30_000): Promise<void> {
+    const deadline = Date.now() + timeoutMs;
+    while (Date.now() < deadline) {
+      await this.page.evaluate(() => { window.scrollTo(0, document.body.scrollHeight / 2); });
+      await this.page.waitForTimeout(500);
+      await this.page.evaluate(() => { window.scrollTo(0, document.body.scrollHeight); });
+      await this.page.waitForTimeout(500);
+
+      const ready = await this.page.evaluate(() => {
+        const txt = document.body.innerText || '';
+        return (
+          !!document.querySelector('footer') &&
+          /reliable solar|360 portfolio/i.test(txt)
+        );
+      });
+      if (ready) return;
+      await this.page.waitForTimeout(1_000);
+    }
   }
 
   async prepareForSnapshot(): Promise<void> {
