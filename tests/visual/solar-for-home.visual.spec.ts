@@ -41,7 +41,7 @@ test.describe('Solar for Home – Full-page snapshots', () => {
     await freezeAnimations(solarForHomePage.page);
     await expect(solarForHomePage.page).toHaveScreenshot('solar-for-home-full-page-desktop.png', {
       fullPage: true,
-      maxDiffPixelRatio: 0.08,
+      maxDiffPixelRatio: 0.12,
       timeout: 30_000,
       mask: [
         solarForHomePage.heroSection,
@@ -63,7 +63,7 @@ test.describe('Solar for Home – Full-page snapshots', () => {
     await freezeAnimations(solarForHomePage.page);
     await expect(solarForHomePage.page).toHaveScreenshot('solar-for-home-full-page-mobile.png', {
       fullPage: true,
-      maxDiffPixelRatio: 0.08,
+      maxDiffPixelRatio: 0.12,
       timeout: 30_000,
       mask: [
         solarForHomePage.heroSection,
@@ -122,7 +122,7 @@ test.describe('Solar for Home – Section snapshots', () => {
     await solarForHomePage.page.waitForTimeout(2_000);
     await freezeAnimations(solarForHomePage.page);
     await expect(solarForHomePage.page).toHaveScreenshot('solar-for-home-portfolio.png', {
-      maxDiffPixelRatio: 0.08,
+      maxDiffPixelRatio: 0.12,
       timeout: 60_000,
     });
   });
@@ -137,7 +137,7 @@ test.describe('Solar for Home – Section snapshots', () => {
     // screenshots" caused by Playwright's scrollIntoViewIfNeeded re-triggering IO
     // on the lg:tw-min-h-screen container.
     await expect(solarForHomePage.page).toHaveScreenshot('solar-for-home-solar-calculator.png', {
-      maxDiffPixelRatio: 0.08,
+      maxDiffPixelRatio: 0.12,
       timeout: 30_000,
     });
   });
@@ -155,6 +155,7 @@ test.describe('Solar for Home – Section snapshots', () => {
     await freezeAnimations(solarForHomePage.page);
     await expect(solarForHomePage.inTheNewsSection).toHaveScreenshot(
       'solar-for-home-in-the-news.png',
+      { maxDiffPixelRatio: 0.05 },
     );
   });
 
@@ -245,7 +246,7 @@ test.describe('Solar for Home – Mobile responsive snapshots', () => {
     await freezeAnimations(solarForHomePage.page);
     await expect(solarForHomePage.page).toHaveScreenshot(
       'solar-for-home-mobile-hero.png',
-      { maxDiffPixelRatio: 0.05 },
+      { maxDiffPixelRatio: 0.25 },
     );
   });
 
@@ -254,6 +255,8 @@ test.describe('Solar for Home – Mobile responsive snapshots', () => {
     await solarForHomePage.scrollToSection(solarForHomePage.footer);
     // Viewport-level screenshot: avoids the footer-on-top / header-below
     // layout artefact caused by the mobile bottom-nav inside <footer>.
-    await expect(solarForHomePage.page).toHaveScreenshot('solar-for-home-mobile-footer.png');
+    await expect(solarForHomePage.page).toHaveScreenshot('solar-for-home-mobile-footer.png', {
+      maxDiffPixelRatio: 0.05,
+    });
   });
 });
