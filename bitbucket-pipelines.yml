@@ -6,30 +6,54 @@ definitions:
 
 pipelines:
   default:
+    # - step:
+    #     name: Visual Tests (rooftop-solar)
+    #     size: 4x
+    #     caches:
+    #       - npm
+    #     script:
+    #       - npm ci
+    #       - ./node_modules/.bin/playwright install
+    #       - >-
+    #         bash -c 'set +e;
+    #         BASE_URL=https://stage.livguardsolar.com/
+    #         ./node_modules/.bin/playwright test
+    #         tests/visual/rooftop-solar.visual.spec.ts
+    #         --workers=100%
+    #         --update-snapshots;
+    #         PW_EXIT=$?;
+    #         npx ts-node brain/analyze.ts || true;
+    #         exit $PW_EXIT'
+    #     artifacts:
+    #       - reports/**
+    #       - allure-results/**
+    #       - tests/visual/__snapshots__/**
+    # - step:
+    #     name: Visual Tests (homepage)
+    #     size: 4x
+    #     caches:
+    #       - npm
+    #     script:
+    #       - npm ci
+    #       - ./node_modules/.bin/playwright install chromium
+    #       - >-
+    #         bash -c 'set +e;
+    #         BASE_URL=https://stage.livguardsolar.com/
+    #         ./node_modules/.bin/playwright test
+    #         tests/visual/homepage.visual.spec.ts
+    #         --project=chromium-desktop
+    #         --workers=100%
+    #         --retries=0
+    #         --update-snapshots;
+    #         PW_EXIT=$?;
+    #         npx ts-node brain/analyze.ts || true;
+    #         exit $PW_EXIT'
+    #     artifacts:
+    #       - reports/**
+    #       - allure-results/**
+    #       - tests/visual/__snapshots__/**
     - step:
-        name: Visual Tests (rooftop-solar)
-        size: 4x
-        caches:
-          - npm
-        script:
-          - npm ci
-          - ./node_modules/.bin/playwright install
-          - >-
-            bash -c 'set +e;
-            BASE_URL=https://stage.livguardsolar.com/
-            ./node_modules/.bin/playwright test
-            tests/visual/rooftop-solar.visual.spec.ts
-            --workers=100%
-            --update-snapshots;
-            PW_EXIT=$?;
-            npx ts-node brain/analyze.ts || true;
-            exit $PW_EXIT'
-        artifacts:
-          - reports/**
-          - allure-results/**
-          - tests/visual/__snapshots__/**
-    - step:
-        name: Visual Tests (homepage)
+        name: Visual Tests (solar-for-home)
         size: 4x
         caches:
           - npm
@@ -38,32 +62,9 @@ pipelines:
           - ./node_modules/.bin/playwright install chromium
           - >-
             bash -c 'set +e;
-            BASE_URL=https://stage.livguardsolar.com/
-            ./node_modules/.bin/playwright test
-            tests/visual/homepage.visual.spec.ts
-            --project=chromium-desktop
-            --workers=100%
-            --retries=0
-            --update-snapshots;
-            PW_EXIT=$?;
-            npx ts-node brain/analyze.ts || true;
-            exit $PW_EXIT'
-        artifacts:
-          - reports/**
-          - allure-results/**
-          - tests/visual/__snapshots__/**
-    - step:
-        name: Visual Tests (solar-for-home)
-        size: 4x
-        caches:
-          - npm
-        script:
-          - npm ci
-          - ./node_modules/.bin/playwright install
-          - >-
-            bash -c 'set +e;
             ./node_modules/.bin/playwright test
             tests/visual/solar-for-home.visual.spec.ts
+            --project=chromium-desktop
             --workers=100%
             --update-snapshots;
             PW_EXIT=$?;
@@ -73,24 +74,24 @@ pipelines:
           - reports/**
           - allure-results/**
           - tests/visual/__snapshots__/**
-    - step:
-        name: Visual Tests (solar-for-commercial)
-        size: 4x
-        caches:
-          - npm
-        script:
-          - npm ci
-          - ./node_modules/.bin/playwright install
-          - >-
-            bash -c 'set +e;
-            ./node_modules/.bin/playwright test
-            tests/visual/solar-for-commercial.visual.spec.ts
-            --workers=100%
-            --update-snapshots;
-            PW_EXIT=$?;
-            npx ts-node brain/analyze.ts || true;
-            exit $PW_EXIT'
-        artifacts:
-          - reports/**
-          - allure-results/**
-          - tests/visual/__snapshots__/**
+    # - step:
+    #     name: Visual Tests (solar-for-commercial)
+    #     size: 4x
+    #     caches:
+    #       - npm
+    #     script:
+    #       - npm ci
+    #       - ./node_modules/.bin/playwright install
+    #       - >-
+    #         bash -c 'set +e;
+    #         ./node_modules/.bin/playwright test
+    #         tests/visual/solar-for-commercial.visual.spec.ts
+    #         --workers=100%
+    #         --update-snapshots;
+    #         PW_EXIT=$?;
+    #         npx ts-node brain/analyze.ts || true;
+    #         exit $PW_EXIT'
+    #     artifacts:
+    #       - reports/**
+    #       - allure-results/**
+    #       - tests/visual/__snapshots__/**
