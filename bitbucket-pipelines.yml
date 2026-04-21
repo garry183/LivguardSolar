@@ -65,6 +65,7 @@ pipelines:
             ./node_modules/.bin/playwright test
             tests/visual/solar-for-home.visual.spec.ts
             --project=chromium-desktop
+            --project=mobile-chrome
             --workers=100%
             --update-snapshots;
             PW_EXIT=$?;
