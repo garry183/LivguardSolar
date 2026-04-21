@@ -67,8 +67,7 @@ pipelines:
             --project=chromium-desktop
             --project=mobile-chrome
             --project=mobile-safari
-            --workers=100%
-            # --update-snapshots;
+            --workers=100%;
             PW_EXIT=$?;
             npx ts-node brain/analyze.ts || true;
             exit $PW_EXIT'
