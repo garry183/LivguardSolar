@@ -155,7 +155,8 @@ pipelines:
               echo "==> Step 3/3: Committing updated HAR + snapshots..."
               git config user.email "ci-pipeline@livguardsolar.com"
               git config user.name "Bitbucket CI [master-update]"
-              git remote set-url origin "https://${BB_USER}:${BB_APP_PASSWORD}@bitbucket.org/${BITBUCKET_REPO_FULL_NAME}.git"
+              printf 'machine bitbucket.org\nlogin %s\npassword %s\n' "${BB_USER}" "${BB_APP_PASSWORD}" > ~/.netrc
+              chmod 600 ~/.netrc
               git add tests/fixtures/har/ tests/visual/__snapshots__/
               if git diff --cached --quiet; then
                 echo "No changes detected — HAR and snapshots are already up to date."
