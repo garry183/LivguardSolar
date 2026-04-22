@@ -1,0 +1,1 @@
+function o(t){return n=>(n in t||console.log(`"${n}",`),t[n]?t[n]:"Invalid String")}export{o as a};

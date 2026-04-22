@@ -1,0 +1,1 @@
+var p=function(r,o){return function(){var n=arguments.length>0&&arguments[0]!==void 0?arguments[0]:{};if(typeof n[r]<"u")return n[r];if(r&&r.indexOf(".")>0){for(var a=r.split("."),i=a.length,e=n[a[0]],u=1;e!=null&&u<i;)e=e[a[u]],u+=1;if(typeof e<"u")return e}return o}},t=p;var m=function(r,o){return function(n){return t(r,o)(n.theme)}},l=m;export{t as a,l as b};

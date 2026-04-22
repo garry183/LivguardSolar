@@ -1,0 +1,1 @@
+import{a as i}from"https://cdndev.livguardsolar.com/build/_shared/chunk-RN63NAG7.js";import{d as n}from"https://cdndev.livguardsolar.com/build/_shared/chunk-UVX3UIWA.js";var t=n(i());function a(){let[e,o]=(0,t.useState)({});return{sections:e,setSections:o}}export{a};
