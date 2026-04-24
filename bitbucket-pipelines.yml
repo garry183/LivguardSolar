@@ -76,7 +76,7 @@ pipelines:
     #       - allure-results/**
     #       - tests/visual/__snapshots__/**
     - step:
-        name: Visual Tests (home page)
+        name: Visual Tests (homepage)
         size: 4x
         caches:
           - npm
