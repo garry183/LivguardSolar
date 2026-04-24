@@ -117,7 +117,7 @@ pipelines:
           script:
             - npm ci
             - |
-              if [ "$SPEC" = "solar-for-commercial" ] || [ "$SPEC" = "solar-for-home" ]; then
+              if [ "$SPEC" = "solar-for-commercial" ] || [ "$SPEC" = "solar-for-home" ] || [ "$SPEC" = "homepage" ]; then
                 ./node_modules/.bin/playwright install chromium webkit
               else
                 ./node_modules/.bin/playwright install chromium
@@ -133,7 +133,7 @@ pipelines:
               BASE_URL=https://stage.livguardsolar.com/ npx ts-node "$HAR_SCRIPT"
             - |
               case "$SPEC" in
-                solar-for-commercial|solar-for-home)
+                solar-for-commercial|solar-for-home|homepage)
                   PROJECTS="--project=chromium-desktop --project=mobile-chrome --project=mobile-safari"
                   ;;
                 *)
