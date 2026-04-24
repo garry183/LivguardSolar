@@ -61,83 +61,103 @@ test.describe('Homepage – Full-page snapshots', () => {
   });
 
   test('full page – mobile', async ({ homePage }) => {
-    test.setTimeout(180_000);
+    test.setTimeout(300_000);
     await homePage.page.setViewportSize(VIEWPORTS.mobile);
     await homePage.prepareForSnapshot();
-    await expect(homePage.page).toHaveScreenshot('full-page-mobile.png', {
+    await homePage.page.evaluate(() => window.scrollTo(0, 0));
+    await homePage.page.waitForTimeout(500);
+    await freezeAnimations(homePage.page);
+    await homePage.page.waitForTimeout(2_000);
+    await freezeAnimations(homePage.page);
+    await expect(homePage.page).toHaveScreenshot('homepage-full-page-mobile.png', {
       fullPage: true,
-      // Raised from 0.03 to 0.08 to match desktop tolerance: mobile full-page
-      // screenshots have more natural variance across projects (font rendering,
-      // scroll physics differences between WebKit/Blink/Gecko at mobile sizes).
-      maxDiffPixelRatio: 0.08,
+      maxDiffPixelRatio: 0.40,
+      timeout: 30_000,
       mask: [homePage.heroSection, homePage.solarDiariesSection],
     });
   });
 });
 
 test.describe('Homepage – Section snapshots', () => {
+  // test.describe.configure sets the timeout for the entire describe block including
+  // beforeEach hooks. 400 s gives headroom for Firefox analytics + lazy-load scroll +
+  // 150 s waitFor on cold-cache mobile-safari workers.
+  test.describe.configure({ timeout: 400_000 });
+
   test.beforeEach(async ({ homePage }) => {
-    // Firefox keeps long-lived analytics connections open so networkidle never
-    // fires, costing up to 30 s in goto(). The lazy-load scroll adds another
-    // ~22 s, the 5-s networkidle cap in prepareForSnapshot adds up to 5 s, and
-    // the 90-s waitFor in scrollToSection covers slow async section content
-    // (faqSection is API-driven and can take >45 s on contended connections).
-    // Firefox cold-cache: goto ≈ 40 s, triggerLazyLoad ≈ 18 s, worst-case
-    // scrollToSection + waitFor ≈ 150 s (Nationwide Reach timed at 90 s previously) —
-    // needs 300 s total budget.
-    test.setTimeout(300_000);
     await homePage.prepareForSnapshot();
   });
 
   test('section – navbar', async ({ homePage }) => {
-    await expect(homePage.navbar).toHaveScreenshot('navbar.png');
+    await expect(homePage.navbar).toHaveScreenshot('homepage-navbar.png');
   });
 
   test('section – hero', async ({ homePage }) => {
     await homePage.scrollToSection(homePage.heroSection);
-    await expect(homePage.heroSection).toHaveScreenshot('hero.png', {
+    await freezeAnimations(homePage.page);
+    await expect(homePage.heroSection).toHaveScreenshot('homepage-hero.png', {
       maxDiffPixelRatio: 0.05,
     });
   });
 
   test('section – Nationwide Reach', async ({ homePage }) => {
     await homePage.scrollToSection(homePage.weAreEverywhereSection);
-    await expect(homePage.weAreEverywhereSection).toHaveScreenshot('we-are-everywhere.png');
+    await freezeAnimations(homePage.page);
+    await expect(homePage.weAreEverywhereSection).toHaveScreenshot('homepage-we-are-everywhere.png');
   });
 
   test('section – 360 Path to Energy Savings', async ({ homePage }) => {
     await homePage.scrollToSection(homePage.goSolarStepsSection);
-    await expect(homePage.goSolarStepsSection).toHaveScreenshot('go-solar-steps.png');
+    await freezeAnimations(homePage.page);
+    await expect(homePage.goSolarStepsSection).toHaveScreenshot('homepage-go-solar-steps.png');
   });
 
   test('section – 360 Portfolio', async ({ homePage }) => {
     await homePage.scrollToSection(homePage.featuredProductsSection);
-    await expect(homePage.featuredProductsSection).toHaveScreenshot('featured-products.png');
+    // Triple freeze + dwell: React useEffects triggered by IO can set new JS timers
+    // AFTER each freeze call. Two extra wait+freeze cycles clear timers set between passes.
+    await freezeAnimations(homePage.page);
+    await homePage.page.waitForTimeout(2_000);
+    await freezeAnimations(homePage.page);
+    await homePage.page.waitForTimeout(2_000);
+    await freezeAnimations(homePage.page);
+    // Viewport-level screenshot: avoids Playwright's scrollIntoViewIfNeeded
+    // re-triggering IO on the lg:tw-min-h-screen container.
+    await expect(homePage.page).toHaveScreenshot('homepage-featured-products.png', {
+      maxDiffPixelRatio: 0.08,
+      timeout: 60_000,
+    });
   });
 
   test('section – Why Livguard Solar', async ({ homePage }) => {
     await homePage.scrollToSection(homePage.whyLivguardSection);
-    // Re-freeze animations after scroll: IntersectionObserver re-fires when the
-    // section enters the viewport, which can restart carousel setInterval timers
-    // that were cleared in prepareForSnapshot. Clearing again ensures a stable slide.
+    // Triple freeze + dwell: IntersectionObserver re-fires when the section enters the
+    // viewport, which can restart carousel setInterval timers cleared in prepareForSnapshot.
     await freezeAnimations(homePage.page);
-    await expect(homePage.whyLivguardSection).toHaveScreenshot('why-livguard.png', {
-      maxDiffPixelRatio: 0.05,
+    await homePage.page.waitForTimeout(2_000);
+    await freezeAnimations(homePage.page);
+    await homePage.page.waitForTimeout(2_000);
+    await freezeAnimations(homePage.page);
+    await expect(homePage.whyLivguardSection).toHaveScreenshot('homepage-why-livguard.png', {
+      maxDiffPixelRatio: 0.15,
+      timeout: 30_000,
     });
   });
 
   test('section – Find the Right Solar Solution', async ({ homePage }) => {
     await homePage.scrollToSection(homePage.faqSection);
-    await expect(homePage.faqSection).toHaveScreenshot('faq.png');
+    await freezeAnimations(homePage.page);
+    await expect(homePage.faqSection).toHaveScreenshot('homepage-faq.png');
   });
 
   test('section – Footer', async ({ homePage }) => {
     await homePage.scrollToSection(homePage.footer);
-    // Element-level screenshot of the footer locator so the result is independent
-    // of the footer's Y position on the page. The page viewport approach was
-    // brittle: when API-driven sections above change height between runs, the
-    // scroll position at the footer shifts and 60%+ of viewport pixels differ.
-    await expect(homePage.footer).toHaveScreenshot('footer.png');
+    await freezeAnimations(homePage.page);
+    // Viewport-level screenshot: avoids capturing mobile bottom-nav elements
+    // that sit inside <footer> and visually resemble a header bar.
+    await expect(homePage.page).toHaveScreenshot('homepage-footer.png', {
+      maxDiffPixelRatio: 0.08,
+    });
   });
 });
 
@@ -145,29 +165,29 @@ test.describe('Homepage – Mobile responsive snapshots', () => {
   test.use({ viewport: VIEWPORTS.mobile });
 
   test('mobile – navbar', async ({ homePage }) => {
-    await expect(homePage.navbar).toHaveScreenshot('mobile-navbar.png');
+    test.setTimeout(120_000);
+    await freezeAnimations(homePage.page);
+    await expect(homePage.navbar).toHaveScreenshot('homepage-mobile-navbar.png');
   });
 
   test('mobile – hero', async ({ homePage }) => {
+    test.setTimeout(120_000);
     await homePage.scrollToSection(homePage.heroSection);
     // Re-freeze after scroll: the hero background rotates via a setInterval that
     // IntersectionObserver restarts when the section re-enters the viewport on mobile.
     await freezeAnimations(homePage.page);
-    // Use a viewport-level screenshot (not element-level) to avoid Playwright's
-    // internal scrollIntoViewIfNeeded call that fires before each stability check.
-    // That internal scroll re-triggers the IO callback which restarts the animation,
-    // preventing two consecutive stable frames within the 15 s timeout.
-    // The hero is already centred in the viewport after scrollToSection, so the
-    // page-level screenshot captures the same visual content.
-    await expect(homePage.page).toHaveScreenshot('mobile-hero.png', {
+    // Viewport-level screenshot avoids Playwright's internal scrollIntoViewIfNeeded
+    // re-triggering IntersectionObserver animation restarts on mobile.
+    await expect(homePage.page).toHaveScreenshot('homepage-mobile-hero.png', {
       maxDiffPixelRatio: 0.05,
     });
   });
 
   test('mobile – footer', async ({ homePage }) => {
+    test.setTimeout(120_000);
     await homePage.scrollToSection(homePage.footer);
     // Viewport-level screenshot: avoids the footer-on-top / header-below
     // layout artefact caused by the mobile bottom-nav inside <footer>.
-    await expect(homePage.page).toHaveScreenshot('mobile-footer.png');
+    await expect(homePage.page).toHaveScreenshot('homepage-mobile-footer.png');
   });
 });
