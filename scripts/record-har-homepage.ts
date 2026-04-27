@@ -4,9 +4,11 @@
  * from stage.livguardsolar.com and cdndev.livguardsolar.com are saved to
  * tests/fixtures/har/homepage.har
  *
- * Uses the "full page – desktop" test because it calls prepareForSnapshot()
- * → triggerLazyLoad() which scrolls the entire page, capturing all lazy-loaded
- * JS chunks and API-driven sections. A narrow test would miss content → React crash in CI.
+ * Uses "Homepage – Section snapshots" because its beforeEach calls
+ * prepareForSnapshot() → triggerLazyLoad(), which scrolls the full page and
+ * forces every lazy-loaded JS chunk and API-driven section to load.
+ * "full page – desktop" is permanently skipped so triggerLazyLoad never ran
+ * when targeting that test — leaving chunk files off the HAR → React crash in CI.
  *
  * Usage: npm run test:record-har:homepage
  */
@@ -15,7 +17,7 @@ import { execSync } from 'child_process';
 console.log('Recording HAR for homepage...\n');
 try {
   execSync(
-    'npx playwright test tests/visual/homepage.visual.spec.ts --project=chromium-desktop -g "full page – desktop" --update-snapshots',
+    'npx playwright test tests/visual/homepage.visual.spec.ts --project=chromium-desktop -g "Homepage – Section snapshots" --update-snapshots',
     {
       stdio: 'inherit',
       env: { ...process.env, RECORD_HAR: '1', BASE_URL: 'https://stage.livguardsolar.com/' },
