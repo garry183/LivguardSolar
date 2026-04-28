@@ -98,6 +98,31 @@ pipelines:
           - reports/**
           - allure-results/**
           - tests/visual/__snapshots__/**
+    - step:
+        name: Linear Design Validation
+        # Runs the design-to-code validation script unconditionally.
+        # The script handles skip logic internally:
+        #   - Exits 0 with a skip message if BITBUCKET_BRANCH contains no Linear ticket ID
+        #   - Exits 0 with a skip message if BITBUCKET_BRANCH is unset
+        #   - Exits 0 (PASS) if isUpdated=true
+        #   - Exits 1 (FAIL) if isUpdated=false
+        #
+        # Required Bitbucket repository variables (Settings -> Repository variables):
+        #   LINEAR_API_KEY  — Linear personal API key or OAuth token
+        #   GEMINI_API_KEY  — Google Gemini API key (free tier, gemini-1.5-flash)
+        #   STAGING_URL     — Staging base URL (e.g. https://stage.livguardsolar.com)
+        #   Verify path is taken from the ticket description: "Verify: /solar-for-home"
+        size: 2x
+        caches:
+          - npm
+        script:
+          - npm ci
+          - ./node_modules/.bin/playwright install chromium
+          - >-
+            LINEAR_API_KEY=$LINEAR_API_KEY
+            GEMINI_API_KEY=$GEMINI_API_KEY
+            STAGING_URL=$STAGING_URL
+            npx ts-node tests/linear/design-to-code-validation.spec.ts
 
   custom:
     master-update:

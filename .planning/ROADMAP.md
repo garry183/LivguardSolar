@@ -97,9 +97,28 @@ Plans:
 
 ---
 
+### Phase 6: Linear Design-to-Code Validation
+**Goal**: After a staging deploy, if the git branch contains a Linear ticket ID, the CI pipeline automatically fetches the design image from that ticket and uses Claude Vision to semantically verify the implementation matches the design — exiting 0 (pass) or 1 (fail) for CI gating
+**Depends on**: Phase 5
+**Requirements**: LIN-01, LIN-02, LIN-03, LIN-04, LIN-05, LIN-06
+**Success Criteria** (what must be TRUE):
+  1. `tests/linear/design-to-code-validation.spec.ts` exists as a standalone TypeScript script (not a Playwright test spec) and is never picked up by `npx playwright test tests/visual/`
+  2. Script parses a Linear ticket ID (pattern `[A-Z]+-\d+`) from `$BITBUCKET_BRANCH` and exits 0 with a skip message if no ID is found
+  3. Script fetches the image attachment from the Linear ticket using a raw `fetch` POST to the Linear GraphQL API with `Authorization: Bearer $LINEAR_API_KEY` — no SDK
+  4. Script screenshots the staging page using Playwright `chromium.launch()` directly (not the test runner), reusing `visualHelpers.ts` (`freezeAnimations`, `triggerLazyLoad`, `waitForAllImages`) and the existing 1440×900 viewport
+  5. Script calls Anthropic messages API via raw `fetch` with both images base64-encoded, returns structured result: `isUpdated`, `confidence` (high/medium/low), `summary`, `differences[]`, `matchingElements[]`
+  6. Bitbucket pipeline has a new step after staging deploy that runs this script; step passes (exit 0) or fails (exit 1) CI accordingly; step is skipped when branch has no Linear ticket ID
+**Plans**: 2 plans
+
+Plans:
+- [ ] 06-01: Create `tests/linear/design-to-code-validation.spec.ts` — branch parsing, Linear image fetch, Playwright screenshot, Anthropic Vision comparison, structured result, exit code
+- [ ] 06-02: Add post-deploy pipeline step to `bitbucket-pipelines.yml` — conditional on Linear ticket ID in branch, env vars wired, skip logic for non-Linear branches
+
+---
+
 ## Progress
 
-**Execution Order:** 1 → 2 → 3 → 4 → 5
+**Execution Order:** 1 → 2 → 3 → 4 → 5 → 6
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
@@ -108,13 +127,14 @@ Plans:
 | 3. Lead/Form Pages Visual Regression | 0/2 | Not started | - |
 | 4. Homepage Fix and Unpark | 0/2 | Not started | - |
 | 5. Jenkins Webhook Integration | 0/2 | Not started | - |
+| 6. Linear Design-to-Code Validation | 0/2 | Not started | - |
 
 ---
 
 ## Coverage
 
-**v1 requirements:** 17 total
-**Mapped:** 17/17
+**v1 requirements:** 23 total
+**Mapped:** 23/23
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
@@ -135,6 +155,13 @@ Plans:
 | JENK-02 | Phase 5 | Pending |
 | JENK-03 | Phase 5 | Pending |
 | JENK-04 | Phase 5 | Pending |
+| LIN-01 | Phase 6 | Pending |
+| LIN-02 | Phase 6 | Pending |
+| LIN-03 | Phase 6 | Pending |
+| LIN-04 | Phase 6 | Pending |
+| LIN-05 | Phase 6 | Pending |
+| LIN-06 | Phase 6 | Pending |
 
 ---
 *Roadmap created: 2026-04-22*
+*Updated: 2026-04-27 — Phase 6 added*

@@ -37,6 +37,15 @@
 - [ ] **JENK-03**: Pipeline result (pass/fail) reported back — visible in Jenkins or Bitbucket
 - [ ] **JENK-04**: Webhook documented in project README / runbook
 
+### Linear Design Validation
+
+- [ ] **LIN-01**: Script file lives at `tests/linear/design-to-code-validation.spec.ts` and is never picked up by `npx playwright test tests/visual/` (isolated from regression suite)
+- [ ] **LIN-02**: Script parses Linear ticket ID matching `[A-Z]+-\d+` from `$BITBUCKET_BRANCH`; exits 0 with skip message if no ID found
+- [ ] **LIN-03**: Script fetches image attachment URL from Linear ticket via raw `fetch` POST to Linear GraphQL API (`Authorization: Bearer $LINEAR_API_KEY`) — no SDK; fails with message if no image found on ticket
+- [ ] **LIN-04**: Script screenshots the staging page using `chromium.launch()` directly, reusing `tests/utils/visualHelpers.ts` helpers (`freezeAnimations`, `triggerLazyLoad`, `waitForAllImages`) and 1440×900 viewport
+- [ ] **LIN-05**: Script calls Anthropic messages API via raw `fetch` with both images base64-encoded; response parsed into structured result: `isUpdated` (boolean), `confidence` (high/medium/low), `summary` (string), `differences[]`, `matchingElements[]`
+- [ ] **LIN-06**: `bitbucket-pipelines.yml` has a new post-deploy step that runs the script; step exits 0 (pass) or 1 (fail); skipped when branch contains no Linear ticket ID; env vars `LINEAR_API_KEY`, `ANTHROPIC_API_KEY`, `STAGING_URL`, `VERIFY_PATH` documented
+
 ## v2 Requirements
 
 ### Percy

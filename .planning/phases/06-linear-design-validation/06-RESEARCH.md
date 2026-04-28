@@ -574,22 +574,16 @@ const structured: ValidationResult = JSON.parse(msg.content[0].text);
 
 ---
 
-## Open Questions
+## Open Questions (RESOLVED)
 
-1. **Linear image authentication**
-   - What we know: Personal API keys fail with 401 on `uploads.linear.app` per a reported GitHub issue. OAuth tokens may work.
-   - What's unclear: Whether this is fixed, still broken, or requires a specific token type.
-   - Recommendation: Build the script with a clear 401 error message that instructs users to replace the image URL with a publicly accessible one as a fallback. Document the requirement for an OAuth token in the step env vars section.
+1. **Linear image authentication** — RESOLVED
+   - Decision: Script attempts download with `Authorization: <API_KEY>`, retries with `Bearer <API_KEY>`, then retries without auth. If all fail, exits 1 with a message instructing the user to switch to an OAuth token. This is reflected in `downloadImage()` in the plan.
 
-2. **Which page does VERIFY_PATH point to?**
-   - What we know: The env var is defined in LIN-06 as `VERIFY_PATH`. The script navigates to `$STAGING_URL$VERIFY_PATH`.
-   - What's unclear: Whether the team intends a full-page screenshot or a specific section. The current design takes a viewport screenshot (`fullPage: false`).
-   - Recommendation: Default to `fullPage: false` (viewport) matching the design mockup aspect ratio; let `VERIFY_PATH` be required (fail with message if absent).
+2. **Which page does VERIFY_PATH point to?** — RESOLVED
+   - Decision: `VERIFY_PATH` is a required env var (script exits 1 if absent). Screenshot uses `fullPage: false` (viewport) to match design mockup aspect ratio. Documented in LIN-06 and the pipeline step env vars.
 
-3. **What media type does the design image have?**
-   - What we know: Designers typically export PNG or JPEG. Linear's upload CDN sets `Content-Type` in the response.
-   - What's unclear: Whether the script should detect media type from the download response or always assume PNG.
-   - Recommendation: Read `Content-Type` from the download response; map to `image/png` / `image/jpeg` / `image/webp`; default to `image/png` if absent.
+3. **What media type does the design image have?** — RESOLVED
+   - Decision: Read `Content-Type` from the download response. Map `image/jpeg`, `image/jpg`, `image/png`, `image/gif`, `image/webp` to Anthropic-supported types; default to `image/png` if absent. Reflected in `downloadImage()` mediaTypeMap.
 
 ---
 

@@ -3,5 +3,8 @@
   "parallel_plans": false,
   "commit_docs": true,
   "yolo_mode": false,
-  "created": "2026-04-22"
+  "created": "2026-04-22",
+  "graphify": {
+    "enabled": true
+  }
 }

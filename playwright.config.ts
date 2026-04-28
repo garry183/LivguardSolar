@@ -2,6 +2,7 @@ import { defineConfig, devices } from '@playwright/test';
 
 export default defineConfig({
   testDir: './tests',
+  testIgnore: ['tests/linear/**'],
   globalTeardown: './global-teardown.ts',
   // Parallel in CI to minimise wall-clock time (Bitbucket runner is sized via
   // `size: 4x` in bitbucket-pipelines.yml → 4 vCPU, 16 GB). Sequential locally
