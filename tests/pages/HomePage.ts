@@ -71,7 +71,13 @@ export class HomePage {
     //
     // Locally with RECORD_HAR=1: capture fresh responses from both domains.
     const HAR_DOMAINS = /(stage|cdndev)\.livguardsolar\.com/;
-    if (process.env.CI) {
+    if (process.env.RECORD_HAR) {
+      await this.page.routeFromHAR(HAR_PATH, {
+        url: HAR_DOMAINS,
+        update: true,
+        updateContent: 'embed',
+      });
+    } else if (process.env.CI) {
       const harExists = existsSync(HAR_PATH);
       const harSize = harExists ? statSync(HAR_PATH).size : 'N/A';
       console.log('[HAR] path=', HAR_PATH, 'exists=', harExists, 'size=', harSize);
@@ -83,12 +89,6 @@ export class HomePage {
 
       this.page.on('requestfailed', req => {
         console.log('[REQ FAILED]', req.url(), req.failure()?.errorText);
-      });
-    } else if (process.env.RECORD_HAR) {
-      await this.page.routeFromHAR(HAR_PATH, {
-        url: HAR_DOMAINS,
-        update: true,
-        updateContent: 'embed',
       });
     }
 
