@@ -84,7 +84,7 @@ export class HomePage {
 
       await this.page.routeFromHAR(HAR_PATH, {
         url: HAR_DOMAINS,
-        notFound: 'fallback',
+        notFound: 'abort',
       });
 
       this.page.on('requestfailed', req => {
