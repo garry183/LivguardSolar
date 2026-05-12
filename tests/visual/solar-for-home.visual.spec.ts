@@ -220,6 +220,9 @@ test.describe('Solar for Home – Section snapshots', () => {
     // that sit inside <footer> and visually resemble a header bar.
     await expect(solarForHomePage.page).toHaveScreenshot('solar-for-home-footer.png', {
       timeout: 30_000,
+      // WebKit renders footer text/shadow slightly differently per-run (observed 0.03 ratio);
+      // 0.05 absorbs that variance without masking structural regressions.
+      maxDiffPixelRatio: 0.05,
     });
   });
 });
@@ -242,7 +245,11 @@ test.describe('Solar for Home – Mobile responsive snapshots', () => {
     test.setTimeout(120_000);
     await solarForHomePage.scrollToSection(solarForHomePage.heroSection);
     // Re-freeze after scroll: hero carousel restarts on IO re-fire.
-    // Use page-level screenshot to avoid element stability issues.
+    // Double-freeze with a brief settle: first freeze kills running timers/RAF;
+    // 300 ms lets any carousel frame already in flight paint and queue a new RAF;
+    // second freeze cancels that queued RAF before the screenshot fires.
+    await freezeAnimations(solarForHomePage.page);
+    await solarForHomePage.page.waitForTimeout(300);
     await freezeAnimations(solarForHomePage.page);
     await expect(solarForHomePage.page).toHaveScreenshot(
       'solar-for-home-mobile-hero.png',
