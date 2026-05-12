@@ -76,7 +76,7 @@ pipelines:
     #       - allure-results/**
     #       - tests/visual/__snapshots__/**
     - step:
-        name: Visual Tests (homepage)
+        name: Visual Tests (solar-for-home)
         size: 4x
         caches:
           - npm
@@ -86,7 +86,7 @@ pipelines:
           - >-
             bash -c 'set +e;
             ./node_modules/.bin/playwright test
-            tests/visual/homepage.visual.spec.ts
+            tests/visual/solar-for-home.visual.spec.ts
             --project=chromium-desktop
             --project=mobile-chrome
             --project=mobile-safari
