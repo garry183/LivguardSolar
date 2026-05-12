@@ -313,6 +313,80 @@ Set isUpdated=false if major design elements are missing, incorrectly positioned
   return result;
 }
 
+// ─── Step 7: Format result as a human-looking QA comment ─────────────────────
+
+function formatHumanComment(result: ValidationResult, pageUrl: string): string {
+  const lines: string[] = [];
+
+  if (result.isUpdated) {
+    lines.push('Tested staging against the design mockup — looks good to ship. ✅');
+  } else {
+    lines.push('Tested staging against the design mockup — a few things to address before this is ready.');
+  }
+
+  lines.push('');
+  lines.push(result.summary);
+
+  if (result.matchingElements.length > 0) {
+    lines.push('');
+    lines.push('**What matches:**');
+    result.matchingElements.forEach(m => lines.push(`- ${m}`));
+  }
+
+  if (result.differences.length > 0) {
+    lines.push('');
+    lines.push('**What needs attention:**');
+    result.differences.forEach(d => lines.push(`- ${d}`));
+  }
+
+  lines.push('');
+  lines.push(`Verified at: ${pageUrl}`);
+
+  return lines.join('\n');
+}
+
+// ─── Step 8: Post comment to Linear ticket ────────────────────────────────────
+
+async function postLinearComment(issueId: string, body: string, apiKey: string): Promise<void> {
+  const mutation = `
+    mutation CreateComment($issueId: String!, $body: String!) {
+      commentCreate(input: { issueId: $issueId, body: $body }) {
+        success
+        comment {
+          id
+        }
+      }
+    }
+  `;
+
+  const response = await fetch('https://api.linear.app/graphql', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': apiKey,
+    },
+    body: JSON.stringify({ query: mutation, variables: { issueId, body } }),
+  });
+
+  if (!response.ok) {
+    const text = await response.text();
+    throw new Error(`Linear comment POST failed: ${response.status} ${response.statusText}\n${text}`);
+  }
+
+  const json = await response.json() as {
+    data: { commentCreate: { success: boolean } };
+    errors?: Array<{ message: string }>;
+  };
+
+  if (json.errors?.length) {
+    throw new Error(`Linear comment errors: ${json.errors.map(e => e.message).join(', ')}`);
+  }
+
+  if (!json.data?.commentCreate?.success) {
+    throw new Error('Linear commentCreate returned success=false');
+  }
+}
+
 // ─── Main ─────────────────────────────────────────────────────────────────────
 
 async function main(): Promise<void> {
@@ -448,6 +522,17 @@ async function main(): Promise<void> {
   if (result.matchingElements.length > 0) {
     console.log('\nMatching Elements:');
     result.matchingElements.forEach(m => console.log(`  + ${m}`));
+  }
+
+  // Step 8: Post result as comment on the Linear ticket
+  const commentBody = formatHumanComment(result, pageUrl);
+  console.log('\n[linear-validate] Posting result to Linear ticket...');
+  try {
+    await postLinearComment(issue.id, commentBody, linearApiKey);
+    console.log(`[linear-validate] Comment posted to ${issue.identifier}`);
+  } catch (err) {
+    // Non-fatal: don't fail the pipeline if the comment can't be posted
+    console.error(`[linear-validate] WARNING: Could not post comment to Linear: ${(err as Error).message}`);
   }
 
   if (result.isUpdated) {
