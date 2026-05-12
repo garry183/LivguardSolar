@@ -44,18 +44,34 @@ export async function triggerLazyLoad(page: Page): Promise<void> {
   await page.evaluate(() => { document.body.style.overflow = ''; });
   await page.evaluate(async () => {
     await new Promise<void>((resolve) => {
-      let totalHeight = 0;
       const distance = 400;
+      // scrollHeight grows as IO-mounted sections render into the DOM.
+      // The old check (totalHeight >= scrollHeight) terminated too early when new
+      // sections added height after we scrolled past them, producing a truncated page.
+      // New strategy: keep scrolling until we are at the actual bottom AND scrollHeight
+      // has been stable for 4 consecutive 500 ms ticks (= 2 s), or a 45 s hard timeout.
+      let lastHeight = document.body.scrollHeight;
+      let stableCount = 0;
+      const deadline = Date.now() + 45_000;
       const timer = setInterval(() => {
         window.scrollBy(0, distance);
-        totalHeight += distance;
-        if (totalHeight >= document.body.scrollHeight) {
-          clearInterval(timer);
-          // Do NOT scroll back to top: sections mounted by IntersectionObserver
-          // will unmount if the page returns to the top before scrollToSection
-          // can find them. Keeping the scroll position near the bottom ensures
-          // all sections remain in the DOM for the subsequent scrollToSection call.
-          resolve();
+        const atBottom =
+          window.scrollY + window.innerHeight >= document.body.scrollHeight - 50;
+        if (atBottom) {
+          if (document.body.scrollHeight === lastHeight) {
+            stableCount++;
+          } else {
+            lastHeight = document.body.scrollHeight;
+            stableCount = 0;
+          }
+          if (stableCount >= 4 || Date.now() > deadline) {
+            clearInterval(timer);
+            resolve();
+          }
+        } else {
+          // Not at bottom yet — height may have grown; reset stability counter.
+          lastHeight = document.body.scrollHeight;
+          stableCount = 0;
         }
       }, 500);
     });

@@ -56,9 +56,8 @@ test.describe('Solar for Home – Full-page snapshots', () => {
     test.setTimeout(180_000);
     await solarForHomePage.page.setViewportSize(VIEWPORTS.mobile);
     await solarForHomePage.prepareForSnapshot();
-    // Do NOT scrollTo(0,0): on mobile, scrolling back to top fires IO callbacks that
-    // unmount below-fold sections, collapsing the document height (~10423px → ~5622px).
-    // fullPage:true captures from document origin regardless of scroll position.
+    await solarForHomePage.page.evaluate(() => window.scrollTo(0, 0));
+    await solarForHomePage.page.waitForTimeout(500);
     await freezeAnimations(solarForHomePage.page);
     await solarForHomePage.page.waitForTimeout(2_000);
     await freezeAnimations(solarForHomePage.page);
