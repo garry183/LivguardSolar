@@ -92,6 +92,13 @@ export class HomePage {
       });
     }
 
+    // Suppress CTA modal before page scripts run — modal sets body{overflow:hidden}
+    // which silently breaks all subsequent scroll calls and prevents IntersectionObserver
+    // from firing, leaving all below-fold sections as empty <div>s.
+    await this.page.addInitScript(() => {
+      try { localStorage.setItem('form_shown', '1'); } catch {}
+    });
+
     await this.page.goto('https://stage.livguardsolar.com/', { waitUntil: 'domcontentloaded' });
 
     try {
@@ -111,14 +118,29 @@ export class HomePage {
 
     await this.page.locator('section, div[class]').first().waitFor({ timeout: 30_000 }).catch(() => {});
 
+    // Dismiss CTA modal (#free-consultation-cta): sets body{overflow:hidden} on load,
+    // silently breaking all scroll calls. localStorage flag suppresses it most of the time;
+    // this is a backstop for when it still appears.
     try {
-      await this.page.getByRole('button', { name: /got it/i }).click({ timeout: 3_000 });
+      await this.page.locator('#free-consultation-cta').getByRole('button').first().click({ timeout: 2_000 });
     } catch {
-      // Banner absent or already dismissed — continue.
+      // Modal absent or already suppressed by localStorage flag.
     }
+    // Force-reset overflow — the CTA modal sets it even before React renders,
+    // so this is the guaranteed backstop regardless of whether the click landed.
+    await this.page.evaluate(() => { document.body.style.overflow = ''; });
 
     if (process.env.CI) {
       await this.waitForHydration(30_000);
+    }
+
+    // Dismiss cookie consent banner AFTER hydration — the banner is rendered by a
+    // React component that mounts post-hydration, so clicking before waitForHydration
+    // targets a non-existent element and the banner remains for all screenshots.
+    try {
+      await this.page.getByRole('button', { name: /got it/i }).click({ timeout: 5_000 });
+    } catch {
+      // Banner absent or already dismissed.
     }
 
     if (process.env.CI) {
@@ -142,6 +164,7 @@ export class HomePage {
   }
 
   async waitForHydration(timeoutMs = 30_000): Promise<void> {
+    await this.page.evaluate(() => { document.body.style.overflow = ''; });
     const deadline = Date.now() + timeoutMs;
     while (Date.now() < deadline) {
       await this.page.evaluate(() => { window.scrollTo(0, document.body.scrollHeight / 2); });

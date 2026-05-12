@@ -28,11 +28,20 @@ export async function freezeAnimations(page: Page): Promise<void> {
       window.clearInterval(id);
       window.clearTimeout(id);
     }
+    // Cancel all pending requestAnimationFrame callbacks (Lottie, GSAP, scroll-driven
+    // path animations) and prevent new ones so screenshots are frame-deterministic.
+    const maxRafId = window.requestAnimationFrame(() => {});
+    for (let id = 1; id <= maxRafId; id++) {
+      window.cancelAnimationFrame(id);
+    }
+    window.requestAnimationFrame = () => 0;
   });
 }
 
 /** Scroll the full page to trigger lazy-loaded images and sections. */
 export async function triggerLazyLoad(page: Page): Promise<void> {
+  // CTA modal sets body{overflow:hidden} on load, silently breaking all scrollBy calls.
+  await page.evaluate(() => { document.body.style.overflow = ''; });
   await page.evaluate(async () => {
     await new Promise<void>((resolve) => {
       let totalHeight = 0;
