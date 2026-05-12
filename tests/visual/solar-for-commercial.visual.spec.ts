@@ -53,7 +53,9 @@ test.describe('Solar for Commercial – Full-page snapshots', () => {
   });
 
   test('full page – mobile', async ({ solarForCommercialPage }, testInfo) => {
-    test.skip(testInfo.project.name === 'mobile-safari', 'Page height varies on mobile-safari due to dynamic content — section tests provide equivalent coverage');
+    // Linux WebKit CI caps scrollBy-based lazy loading at ~5701px; fullPage mobile
+    // is covered per-section by Section snapshot tests on mobile-safari.
+    test.skip(testInfo.project.name === 'mobile-safari' && !!process.env.CI);
     test.setTimeout(300_000);
     // HAR replay makes this deterministic — all API responses are hermetically sealed.
     await solarForCommercialPage.page.setViewportSize(VIEWPORTS.mobile);
@@ -242,6 +244,11 @@ test.describe('Solar for Commercial – Mobile responsive snapshots', () => {
     await solarForCommercialPage.scrollToSection(solarForCommercialPage.heroSection);
     // Viewport-level screenshot avoids Playwright's internal scrollIntoViewIfNeeded
     // re-triggering IntersectionObserver animation restarts on mobile.
+    // Double-freeze with 300ms settle: first freeze kills running timers/RAF;
+    // settle lets any in-flight carousel frame paint and queue a new RAF;
+    // second freeze cancels that queued RAF before the screenshot fires.
+    await freezeAnimations(solarForCommercialPage.page);
+    await solarForCommercialPage.page.waitForTimeout(300);
     await freezeAnimations(solarForCommercialPage.page);
     await expect(solarForCommercialPage.page).toHaveScreenshot(
       'solar-for-commercial-mobile-hero.png',
