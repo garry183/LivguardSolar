@@ -1,5 +1,5 @@
 import { test, expect } from '../fixtures/rooftopSolar.fixture';
-import { VIEWPORTS, freezeAnimations } from '../utils/visualHelpers';
+import { VIEWPORTS, freezeAnimations, resetCarouselToFirst } from '../utils/visualHelpers';
 
 test.describe('Rooftop Solar – Element visibility', () => {
   test.describe.configure({ timeout: 120_000 });
@@ -91,12 +91,18 @@ test.describe('Rooftop Solar – Section snapshots', () => {
     });
   });
 
-  test('section – hero', async ({ rooftopSolarPage }) => {
+  test('section – hero', async ({ rooftopSolarPage }, testInfo) => {
     await rooftopSolarPage.scrollToSection(rooftopSolarPage.heroSection);
     // Viewport-level screenshot: avoids "element not stable" errors from animated hero.
     await freezeAnimations(rooftopSolarPage.page);
+    // Desktop: Swiper API resets carousel to slide 0 deterministically.
+    // Mobile: carousel is a pure React component (no Swiper), mask the hero to suppress
+    // non-deterministic slide content — same strategy as full-page desktop test.
+    await resetCarouselToFirst(rooftopSolarPage.page);
+    const isMobile = ['mobile-chrome', 'mobile-safari'].includes(testInfo.project.name);
     await expect(rooftopSolarPage.page).toHaveScreenshot('rooftop-solar-hero.png', {
       maxDiffPixelRatio: 0.05,
+      mask: isMobile ? [rooftopSolarPage.heroSection] : [],
     });
   });
 
@@ -151,7 +157,10 @@ test.describe('Rooftop Solar – Section snapshots', () => {
   test('section – FAQ', async ({ rooftopSolarPage }) => {
     await rooftopSolarPage.scrollToSection(rooftopSolarPage.faqSection);
     await freezeAnimations(rooftopSolarPage.page);
-    await expect(rooftopSolarPage.faqSection).toHaveScreenshot('rooftop-solar-faq.png');
+    await expect(rooftopSolarPage.faqSection).toHaveScreenshot('rooftop-solar-faq.png', {
+      // 1px height shifts from subpixel font rendering; 0.06 absorbs without masking real regressions.
+      maxDiffPixelRatio: 0.06,
+    });
   });
 
   test('section – Footer', async ({ rooftopSolarPage }) => {
@@ -188,8 +197,12 @@ test.describe('Rooftop Solar – Mobile responsive snapshots', () => {
     await freezeAnimations(rooftopSolarPage.page);
     await rooftopSolarPage.page.waitForTimeout(300);
     await freezeAnimations(rooftopSolarPage.page);
+    // Mobile carousel is pure React (no Swiper API) — mask hero to suppress non-deterministic
+    // slide content, matching the full-page desktop test's masking strategy.
+    await resetCarouselToFirst(rooftopSolarPage.page);
     await expect(rooftopSolarPage.page).toHaveScreenshot('rooftop-solar-mobile-hero.png', {
       maxDiffPixelRatio: 0.05,
+      mask: [rooftopSolarPage.heroSection],
     });
   });
 

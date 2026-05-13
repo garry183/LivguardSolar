@@ -105,6 +105,35 @@ export async function waitForAllImages(
   }, selector);
 }
 
+/**
+ * Reset the hero section's Swiper carousel to slide 0 so hero snapshots are
+ * deterministic regardless of how long the carousel ran before freezeAnimations fired.
+ * Call AFTER freezeAnimations so transition-duration:0s makes the jump instant.
+ *
+ * Scoped to the first child of <main> only — calling slideTo on page-level or footer
+ * Swipers scrolls the viewport away from the hero.
+ */
+export async function resetCarouselToFirst(page: Page): Promise<void> {
+  await page.evaluate(() => {
+    // Scoped to the hero (first direct child of <main>) to avoid scrolling the
+    // viewport via page-level or footer Swipers. Mobile carousel is pure React
+    // with no Swiper API — hero section is masked in mobile hero tests instead.
+    const hero = document.querySelector<HTMLElement>('main > *:first-child');
+    if (!hero) return;
+    Array.from(hero.querySelectorAll<any>('*'))
+      .filter(el => el.swiper?.slideTo)
+      .forEach(el => {
+        const sw = el.swiper;
+        if (sw.params?.loop && sw.slideToLoop) {
+          sw.slideToLoop(0, 0);
+        } else {
+          sw.slideTo(0, 0);
+        }
+      });
+  });
+  await page.waitForTimeout(100);
+}
+
 /** Build a consistent, filename-safe snapshot name. */
 export function snapshotName(...parts: string[]): string {
   return (
