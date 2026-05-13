@@ -194,6 +194,11 @@ export class RooftopSolarPage {
     // This scrolls the page and polls for key below-the-fold content.
     if (process.env.CI) {
       await this.waitForHydration(30_000);
+      // Second pass: forcePageVisible ran before hydration, so React-rendered elements
+      // (e.g. duplicate alt-text paragraphs in the stats section) may have been added
+      // to the DOM after the first pass. Re-run to un-hide them consistently so
+      // screenshots always match baselines that were captured after full hydration.
+      await this.forcePageVisible();
     }
 
     // CI diagnostic: log page state so we can see what actually renders.

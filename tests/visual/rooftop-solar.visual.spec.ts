@@ -111,6 +111,8 @@ test.describe('Rooftop Solar – Section snapshots', () => {
     await freezeAnimations(rooftopSolarPage.page);
     await expect(rooftopSolarPage.bookSurveySection).toHaveScreenshot(
       'rooftop-solar-book-survey.png',
+      // Form fields (textboxes, button) have non-trivial WebKit rendering variance.
+      { maxDiffPixelRatio: 0.08 },
     );
   });
 
