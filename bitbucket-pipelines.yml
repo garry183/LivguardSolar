@@ -22,24 +22,22 @@ pipelines:
             --project=chromium-desktop --project=mobile-chrome --project=mobile-safari
             --workers=100%; [ $? -ne 0 ] && FAIL=1;
             cp reports/playwright-report.json reports/homepage-report.json 2>/dev/null || true;
-            npx ts-node brain/analyze.ts || true;
             echo "==> solar-for-home";
             ./node_modules/.bin/playwright test tests/visual/solar-for-home.visual.spec.ts
             --project=chromium-desktop --project=mobile-chrome --project=mobile-safari
             --workers=100%; [ $? -ne 0 ] && FAIL=1;
             cp reports/playwright-report.json reports/solar-for-home-report.json 2>/dev/null || true;
-            npx ts-node brain/analyze.ts || true;
             echo "==> solar-for-commercial";
             ./node_modules/.bin/playwright test tests/visual/solar-for-commercial.visual.spec.ts
             --project=chromium-desktop --project=mobile-chrome --project=mobile-safari
             --workers=100%; [ $? -ne 0 ] && FAIL=1;
             cp reports/playwright-report.json reports/solar-for-commercial-report.json 2>/dev/null || true;
-            npx ts-node brain/analyze.ts || true;
             echo "==> rooftop-solar";
             ./node_modules/.bin/playwright test tests/visual/rooftop-solar.visual.spec.ts
             --project=chromium-desktop --project=mobile-chrome --project=mobile-safari
             --workers=100%; [ $? -ne 0 ] && FAIL=1;
             cp reports/playwright-report.json reports/rooftop-solar-report.json 2>/dev/null || true;
+            npx ts-node scripts/merge-reports.ts || true;
             npx ts-node brain/analyze.ts || true;
             npx ts-node scripts/generate-report.ts || true;
             exit $FAIL'
