@@ -118,6 +118,17 @@ test.describe('Rooftop Solar – Section snapshots', () => {
 
   test('section – Stats', async ({ rooftopSolarPage }) => {
     await rooftopSolarPage.scrollToSection(rooftopSolarPage.statsSection);
+    // Wait for stats content to hydrate before freezing — in CI, the MNRE/counter text
+    // can arrive late via React hydration; without this, the fallback locator resolves to
+    // an empty wrapper div (132px) instead of the full stats section (204px).
+    await rooftopSolarPage.page
+      .locator('main')
+      .getByText(/MNRE|DISCOM/i)
+      .first()
+      .waitFor({ state: 'visible', timeout: 15_000 })
+      .catch(() => {});
+    await freezeAnimations(rooftopSolarPage.page);
+    await rooftopSolarPage.page.waitForTimeout(500);
     await freezeAnimations(rooftopSolarPage.page);
     await expect(rooftopSolarPage.statsSection).toHaveScreenshot('rooftop-solar-stats.png', {
       // Counter stats animate via requestAnimationFrame; allow small pixel variance.
