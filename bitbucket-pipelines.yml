@@ -7,7 +7,7 @@ definitions:
 pipelines:
   default:
     - step:
-        name: Visual Tests (rooftop-solar)
+        name: Visual Tests (homepage)
         size: 4x
         caches:
           - npm
@@ -17,7 +17,7 @@ pipelines:
           - >-
             bash -c 'set +e;
             ./node_modules/.bin/playwright test
-            tests/visual/rooftop-solar.visual.spec.ts
+            tests/visual/homepage.visual.spec.ts
             --project=chromium-desktop
             --project=mobile-chrome
             --project=mobile-safari
@@ -29,53 +29,6 @@ pipelines:
           - reports/**
           - allure-results/**
           - tests/visual/__snapshots__/**
-    # - step:
-    #     name: Visual Tests (homepage)
-    #     size: 4x
-    #     caches:
-    #       - npm
-    #     script:
-    #       - npm ci
-    #       - ./node_modules/.bin/playwright install chromium
-    #       - >-
-    #         bash -c 'set +e;
-    #         BASE_URL=https://stage.livguardsolar.com/
-    #         ./node_modules/.bin/playwright test
-    #         tests/visual/homepage.visual.spec.ts
-    #         --project=chromium-desktop
-    #         --workers=100%
-    #         --retries=0
-    #         --update-snapshots;
-    #         PW_EXIT=$?;
-    #         npx ts-node brain/analyze.ts || true;
-    #         exit $PW_EXIT'
-    #     artifacts:
-    #       - reports/**
-    #       - allure-results/**
-    #       - tests/visual/__snapshots__/**
-    # - step:
-    #     name: Visual Tests (solar-for-home)
-    #     size: 4x
-    #     caches:
-    #       - npm
-    #     script:
-    #       - npm ci
-    #       - ./node_modules/.bin/playwright install chromium webkit
-    #       - >-
-    #         bash -c 'set +e;
-    #         ./node_modules/.bin/playwright test
-    #         tests/visual/solar-for-home.visual.spec.ts
-    #         --project=chromium-desktop
-    #         --project=mobile-chrome
-    #         --project=mobile-safari
-    #         --workers=100%;
-    #         PW_EXIT=$?;
-    #         npx ts-node brain/analyze.ts || true;
-    #         exit $PW_EXIT'
-    #     artifacts:
-    #       - reports/**
-    #       - allure-results/**
-    #       - tests/visual/__snapshots__/**
     - step:
         name: Visual Tests (solar-for-home)
         size: 4x
@@ -111,6 +64,29 @@ pipelines:
             bash -c 'set +e;
             ./node_modules/.bin/playwright test
             tests/visual/solar-for-commercial.visual.spec.ts
+            --project=chromium-desktop
+            --project=mobile-chrome
+            --project=mobile-safari
+            --workers=100%;
+            PW_EXIT=$?;
+            npx ts-node brain/analyze.ts || true;
+            exit $PW_EXIT'
+        artifacts:
+          - reports/**
+          - allure-results/**
+          - tests/visual/__snapshots__/**
+    - step:
+        name: Visual Tests (rooftop-solar)
+        size: 4x
+        caches:
+          - npm
+        script:
+          - npm ci
+          - ./node_modules/.bin/playwright install chromium webkit
+          - >-
+            bash -c 'set +e;
+            ./node_modules/.bin/playwright test
+            tests/visual/rooftop-solar.visual.spec.ts
             --project=chromium-desktop
             --project=mobile-chrome
             --project=mobile-safari
