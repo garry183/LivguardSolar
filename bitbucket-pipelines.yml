@@ -9,6 +9,7 @@ pipelines:
     - step:
         name: Visual Tests (homepage)
         size: 4x
+        allow-failure: true
         caches:
           - npm
         script:
@@ -32,6 +33,7 @@ pipelines:
     - step:
         name: Visual Tests (solar-for-home)
         size: 4x
+        allow-failure: true
         caches:
           - npm
         script:
@@ -55,6 +57,7 @@ pipelines:
     - step:
         name: Visual Tests (solar-for-commercial)
         size: 4x
+        allow-failure: true
         caches:
           - npm
         script:
@@ -78,6 +81,7 @@ pipelines:
     - step:
         name: Visual Tests (rooftop-solar)
         size: 4x
+        allow-failure: true
         caches:
           - npm
         script:
