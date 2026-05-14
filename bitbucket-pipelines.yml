@@ -109,14 +109,7 @@ pipelines:
                 BASE_URL=https://stage.livguardsolar.com/ npx ts-node "$HAR_SCRIPT"
               fi
             - |
-              case "$SPEC" in
-                solar-for-commercial|solar-for-home|homepage)
-                  PROJECTS="--project=chromium-desktop --project=mobile-chrome --project=mobile-safari"
-                  ;;
-                *)
-                  PROJECTS="--project=chromium-desktop"
-                  ;;
-              esac
+              PROJECTS="--project=chromium-desktop --project=mobile-chrome --project=mobile-safari"
               echo "==> Step 2/3: Re-snapping baselines for $SPEC..."
               set +e
               BASE_URL=https://stage.livguardsolar.com/ \
