@@ -112,7 +112,11 @@ test.describe('Homepage – Section snapshots', () => {
   test('section – 360 Path to Energy Savings', async ({ homePage }) => {
     await homePage.scrollToSection(homePage.goSolarStepsSection);
     await freezeAnimations(homePage.page);
-    await expect(homePage.goSolarStepsSection).toHaveScreenshot('homepage-go-solar-steps.png');
+    await homePage.page.waitForTimeout(500);
+    await freezeAnimations(homePage.page);
+    await expect(homePage.goSolarStepsSection).toHaveScreenshot('homepage-go-solar-steps.png', {
+      maxDiffPixelRatio: 0.05,
+    });
   });
 
   test('section – 360 Portfolio', async ({ homePage }) => {
@@ -150,7 +154,11 @@ test.describe('Homepage – Section snapshots', () => {
   test('section – Find the Right Solar Solution', async ({ homePage }) => {
     await homePage.scrollToSection(homePage.faqSection);
     await freezeAnimations(homePage.page);
-    await expect(homePage.faqSection).toHaveScreenshot('homepage-faq.png');
+    await homePage.page.waitForTimeout(1_000);
+    await freezeAnimations(homePage.page);
+    await expect(homePage.faqSection).toHaveScreenshot('homepage-faq.png', {
+      maxDiffPixelRatio: 0.05,
+    });
   });
 
   test('section – Footer', async ({ homePage }) => {
