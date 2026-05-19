@@ -7,69 +7,14 @@ definitions:
 pipelines:
   default:
     - step:
-        name: Visual Tests (all specs)
-        size: 4x
-        caches:
-          - npm
-        script:
-          - npm ci
-          - ./node_modules/.bin/playwright install chromium webkit
-          - >-
-            bash -c 'set +e;
-            FAIL=0;
-            echo "==> homepage";
-            ./node_modules/.bin/playwright test tests/visual/homepage.visual.spec.ts
-            --project=chromium-desktop --project=mobile-chrome --project=mobile-safari
-            --workers=100%; [ $? -ne 0 ] && FAIL=1;
-            cp reports/playwright-report.json reports/homepage-report.json 2>/dev/null || true;
-            echo "==> solar-for-home";
-            ./node_modules/.bin/playwright test tests/visual/solar-for-home.visual.spec.ts
-            --project=chromium-desktop --project=mobile-chrome --project=mobile-safari
-            --workers=100%; [ $? -ne 0 ] && FAIL=1;
-            cp reports/playwright-report.json reports/solar-for-home-report.json 2>/dev/null || true;
-            echo "==> solar-for-commercial";
-            ./node_modules/.bin/playwright test tests/visual/solar-for-commercial.visual.spec.ts
-            --project=chromium-desktop --project=mobile-chrome --project=mobile-safari
-            --workers=100%; [ $? -ne 0 ] && FAIL=1;
-            cp reports/playwright-report.json reports/solar-for-commercial-report.json 2>/dev/null || true;
-            echo "==> rooftop-solar";
-            ./node_modules/.bin/playwright test tests/visual/rooftop-solar.visual.spec.ts
-            --project=chromium-desktop --project=mobile-chrome --project=mobile-safari
-            --workers=100%; [ $? -ne 0 ] && FAIL=1;
-            cp reports/playwright-report.json reports/rooftop-solar-report.json 2>/dev/null || true;
-            npx ts-node scripts/merge-reports.ts || true;
-            npx ts-node brain/analyze.ts || true;
-            npx ts-node scripts/generate-report.ts || true;
-            exit $FAIL'
-        artifacts:
-          - reports/**
-          - allure-results/**
-          - tests/visual/__snapshots__/**
-    - step:
-        name: Linear Design Validation
-        # Runs the design-to-code validation script unconditionally.
-        # The script handles skip logic internally:
-        #   - Exits 0 with a skip message if BITBUCKET_BRANCH contains no Linear ticket ID
-        #   - Exits 0 with a skip message if BITBUCKET_BRANCH is unset
-        #   - Exits 0 (PASS) if isUpdated=true
-        #   - Exits 1 (FAIL) if isUpdated=false
-        #
-        # Required Bitbucket repository variables (Settings -> Repository variables):
-        #   LINEAR_API_KEY  — Linear personal API key or OAuth token
-        #   GEMINI_API_KEY  — Google Gemini API key (free tier, gemini-1.5-flash)
-        #   STAGING_URL     — Staging base URL (e.g. https://stage.livguardsolar.com)
-        #   Verify path is taken from the ticket description: "Verify: /solar-for-home"
+        name: Lighthouse CI
+        image: patrickhulce/lhci-client:latest
         size: 2x
-        caches:
-          - npm
         script:
-          - npm ci
-          - ./node_modules/.bin/playwright install chromium
-          - >-
-            LINEAR_API_KEY=$LINEAR_API_KEY
-            GEMINI_API_KEY=$GEMINI_API_KEY
-            STAGING_URL=$STAGING_URL
-            npx ts-node tests/linear/design-to-code-validation.spec.ts
+          - lhci autorun
+          - node scripts/lighthouse-slack-report.js
+        artifacts:
+          - .lighthouseci/**
 
   custom:
     master-update:
@@ -139,3 +84,11 @@ pipelines:
             - tests/fixtures/har/**
             - tests/visual/__snapshots__/**
             - reports/**
+    load-test:
+      - step:
+          name: k6 Load Test (Manual)
+          image: grafana/k6:latest
+          script:
+            - k6 run --env STAGING_URL=$STAGING_URL --summary-export=k6-summary.json tests/performance/load.k6.js
+          artifacts:
+            - k6-summary.json

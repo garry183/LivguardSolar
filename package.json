@@ -26,9 +26,12 @@
     "test:record-har:solar-for-home": "ts-node scripts/record-har-solar-for-home.ts",
     "test:record-har:solar-for-commercial": "ts-node scripts/record-har-solar-for-commercial.ts",
     "ci:artifacts": "ts-node scripts/fetch-pipeline-artifacts.ts",
-    "ci:debug": "ts-node scripts/fetch-pipeline-artifacts.ts && ts-node brain/analyze.ts"
+    "ci:debug": "ts-node scripts/fetch-pipeline-artifacts.ts && ts-node brain/analyze.ts",
+    "perf:lighthouse": "lhci autorun",
+    "perf:slack-report": "node scripts/lighthouse-slack-report.js"
   },
   "devDependencies": {
+    "@lhci/cli": "^0.14.0",
     "@playwright/test": "^1.50.0",
     "ts-node": "^10.9.2",
     "@types/node": "^25.3.3",
