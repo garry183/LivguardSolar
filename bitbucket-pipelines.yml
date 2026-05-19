@@ -8,11 +8,12 @@ pipelines:
   default:
     - step:
         name: Lighthouse CI
-        image: ghcr.io/puppeteer/puppeteer:latest
         size: 2x
         script:
-          - npm install @lhci/cli@0.15.1
-          - CHROME_PATH=$PUPPETEER_EXECUTABLE_PATH npx lhci autorun
+          - npm install -g @lhci/cli@0.15.1
+          - export CHROME_PATH=$(find /ms-playwright -name "chrome" -not -name "*.so" -type f 2>/dev/null | head -1)
+          - echo "Chrome found at $CHROME_PATH"
+          - lhci autorun
           - node scripts/lighthouse-slack-report.js
         artifacts:
           - .lighthouseci/**
