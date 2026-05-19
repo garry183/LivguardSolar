@@ -1,11 +1,13 @@
+const BASE_URL = (process.env.STAGING_URL || '').replace(/\/$/, '');
+
 module.exports = {
   ci: {
     collect: {
       url: [
-        `${process.env.STAGING_URL}/`,
-        `${process.env.STAGING_URL}/rooftop-solar`,
-        `${process.env.STAGING_URL}/solar-for-home`,
-        `${process.env.STAGING_URL}/solar-for-commercial`,
+        `${BASE_URL}/`,
+        `${BASE_URL}/rooftop-solar`,
+        `${BASE_URL}/solar-for-home`,
+        `${BASE_URL}/solar-for-commercial`,
       ],
       numberOfRuns: 5,
       settings: {
