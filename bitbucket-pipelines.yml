@@ -12,7 +12,7 @@ pipelines:
         size: 2x
         script:
           - npm install @lhci/cli@0.15.1
-          - npx lhci autorun
+          - CHROME_PATH=$PUPPETEER_EXECUTABLE_PATH npx lhci autorun
           - node scripts/lighthouse-slack-report.js
         artifacts:
           - .lighthouseci/**
