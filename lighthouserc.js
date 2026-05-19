@@ -11,8 +11,11 @@ module.exports = {
       ],
       numberOfRuns: 5,
       settings: {
-        chromeFlags: '--no-sandbox --disable-dev-shm-usage',
+        chromeFlags: '--no-sandbox --disable-dev-shm-usage --disable-gpu --headless=new --disable-features=VizDisplayCompositor --disable-extensions --disable-background-timer-throttling --disable-backgrounding-occluded-windows --disable-renderer-backgrounding',
         onlyCategories: ['performance', 'accessibility', 'best-practices', 'seo'],
+        maxWaitForFcp: 60000,
+        maxWaitForLoad: 90000,
+        throttlingMethod: 'devtools',
       },
     },
     assert: {
