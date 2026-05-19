@@ -11,8 +11,8 @@ pipelines:
         image: ghcr.io/puppeteer/puppeteer:latest
         size: 2x
         script:
-          - npm install -g @lhci/cli@0.15.1
-          - lhci autorun
+          - npm install @lhci/cli@0.15.1
+          - npx lhci autorun
           - node scripts/lighthouse-slack-report.js
         artifacts:
           - .lighthouseci/**
