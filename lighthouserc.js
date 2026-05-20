@@ -11,12 +11,11 @@ module.exports = {
       ],
       numberOfRuns: 5,
       settings: {
-        chromeFlags: '--no-sandbox --disable-dev-shm-usage --disable-gpu --headless=new --disable-features=VizDisplayCompositor --disable-extensions --disable-background-timer-throttling --disable-backgrounding-occluded-windows --disable-renderer-backgrounding --disable-blink-features=AutomationControlled',
+        chromeFlags: '--no-sandbox --disable-dev-shm-usage --disable-gpu --headless=new --disable-extensions --disable-background-timer-throttling --disable-backgrounding-occluded-windows --disable-renderer-backgrounding --disable-blink-features=AutomationControlled --user-agent="Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36"',
         onlyCategories: ['performance', 'accessibility', 'best-practices', 'seo'],
         maxWaitForFcp: 60000,
         maxWaitForLoad: 90000,
         throttlingMethod: 'devtools',
-        extraHeaders: '{"User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36"}',
       },
     },
     assert: {
