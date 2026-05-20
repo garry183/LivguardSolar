@@ -11,7 +11,10 @@ pipelines:
         size: 2x
         script:
           - npm install -g @lhci/cli@0.15.1
-          - export CHROME_PATH=$(find /ms-playwright -name "chrome" -not -name "*.so" -type f 2>/dev/null | head -1)
+          - wget -q -O - https://dl.google.com/linux/linux_signing_key.pub | gpg --dearmor > /usr/share/keyrings/google-chrome.gpg
+          - echo "deb [arch=amd64 signed-by=/usr/share/keyrings/google-chrome.gpg] http://dl.google.com/linux/chrome/deb/ stable main" > /etc/apt/sources.list.d/google-chrome.list
+          - apt-get update -qq && apt-get install -y google-chrome-stable
+          - export CHROME_PATH=$(which google-chrome-stable)
           - echo "Chrome found at $CHROME_PATH"
           - lhci autorun
           - node scripts/lighthouse-slack-report.js
