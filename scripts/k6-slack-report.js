@@ -148,12 +148,10 @@ function sendToSlack(r, allPassed) {
   const build  = process.env.BITBUCKET_BUILD_NUMBER || '?';
   const status = allPassed ? '✅ All thresholds passed' : '⚠️ Threshold(s) breached';
 
-  const pageNames  = r.pageGroups.map(p => p.name).join(' · ') || 'homepage · rooftop-solar · solar-for-home · solar-for-commercial';
-  const pageTable  = buildPageTable(r.pageGroups);
-  const metricsTbl = buildTable(r);
-  const pageBlock  = pageTable ? `\n*Per-page results:*\n\`\`\`\n${pageTable}\n\`\`\`` : '';
+  const pageTable = buildPageTable(r.pageGroups);
+  const pageBlock = pageTable ? `\`\`\`\n${pageTable}\n\`\`\`` : '';
 
-  const text = `*k6 Load Test* — Build #${build} \`${branch}\`  |  *${r.maxVUs} max VUs*  |  2 min ramp → 5 min @ peak → 2 min ramp down\n*Pages:* ${pageNames}\n${status}\n\`\`\`\n${metricsTbl}\n\`\`\`${pageBlock}`;
+  const text = `*k6 Load Test* — Build #${build} \`${branch}\`  |  *${r.maxVUs} max VUs*  |  2 min ramp → 5 min @ peak → 2 min ramp down\n${status}\n${pageBlock}`;
   const payload = JSON.stringify({ text });
 
   const url     = new URL(WEBHOOK);
@@ -197,8 +195,7 @@ async function main() {
   const allPassed = r.p95Passed && r.errPassed;
 
   const pageTable = buildPageTable(r.pageGroups);
-  console.log('\n' + buildTable(r) + '\n');
-  if (pageTable) console.log(pageTable + '\n');
+  if (pageTable) console.log('\n' + pageTable + '\n');
   await sendToSlack(r, allPassed);
 }
 
