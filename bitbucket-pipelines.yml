@@ -91,9 +91,13 @@ pipelines:
             - reports/**
     load-test:
       - step:
-          name: k6 Load Test (Manual)
+          name: k6 Load Test
           image: grafana/k6:latest
           script:
             - k6 run --env STAGING_URL=$STAGING_URL --summary-export=k6-summary.json tests/performance/load.k6.js
           artifacts:
             - k6-summary.json
+      - step:
+          name: k6 Slack Report
+          script:
+            - node scripts/k6-slack-report.js

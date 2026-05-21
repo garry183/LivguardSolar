@@ -28,7 +28,8 @@
     "ci:artifacts": "ts-node scripts/fetch-pipeline-artifacts.ts",
     "ci:debug": "ts-node scripts/fetch-pipeline-artifacts.ts && ts-node brain/analyze.ts",
     "perf:lighthouse": "lhci autorun",
-    "perf:slack-report": "node scripts/lighthouse-slack-report.js"
+    "perf:slack-report": "node scripts/lighthouse-slack-report.js",
+    "perf:k6-slack-report": "node scripts/k6-slack-report.js"
   },
   "devDependencies": {
     "@lhci/cli": "^0.14.0",
