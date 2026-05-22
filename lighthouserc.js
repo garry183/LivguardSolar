@@ -11,8 +11,16 @@ module.exports = {
       ],
       numberOfRuns: 5,
       settings: {
-        chromeFlags: '--no-sandbox --disable-dev-shm-usage --disable-gpu --headless=new --disable-extensions --disable-background-timer-throttling --disable-backgrounding-occluded-windows --disable-renderer-backgrounding --disable-blink-features=AutomationControlled --user-agent="Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36"',
+        chromeFlags: '--no-sandbox --disable-dev-shm-usage --disable-gpu --headless=new --disable-extensions --disable-background-timer-throttling --disable-backgrounding-occluded-windows --disable-renderer-backgrounding --disable-blink-features=AutomationControlled --user-agent="Mozilla/5.0 (Linux; Android 11; Pixel 5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Mobile Safari/537.36"',
         onlyCategories: ['performance', 'accessibility', 'best-practices', 'seo'],
+        formFactor: 'mobile',
+        screenEmulation: {
+          mobile: true,
+          width: 390,
+          height: 844,
+          deviceScaleFactor: 3,
+          disabled: false,
+        },
         maxWaitForFcp: 60000,
         maxWaitForLoad: 90000,
         throttlingMethod: 'devtools',
