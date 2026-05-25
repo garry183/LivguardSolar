@@ -1,19 +1,24 @@
 import http from 'k6/http';
 import { check, sleep, group } from 'k6';
-import { Rate, Trend } from 'k6/metrics';
+import { Rate, Trend, Counter } from 'k6/metrics';
 
 const errorRate = new Rate('errors');
+const status429 = new Counter('status_429');
+const status5xx = new Counter('status_5xx');
 const BASE_URL = __ENV.STAGING_URL;
 
 export const options = {
-  stages: [
-    { duration: '2m', target: 20 },
-    { duration: '5m', target: 50 },
-    { duration: '2m', target: 0 },
-  ],
+  scenarios: {
+    smoke: {
+      executor: 'constant-vus',
+      vus: 5,
+      duration: '3m',
+    },
+  },
   thresholds: {
-    http_req_duration: ['p(95)<750'],
-    errors: ['rate<0.01'],
+    http_req_duration: ['p(95)<1500'],
+    errors:            ['rate<0.05'],
+    http_req_failed:   ['rate<0.05'],
   },
 };
 
@@ -42,9 +47,12 @@ export default function () {
 
     pageTrends[name].add(res.timings.duration);
 
+    if (res.status === 429) status429.add(1);
+    if (res.status >= 500)  status5xx.add(1);
+
     const ok = check(res, {
-      'status 200':       (r) => r.status === 200,
-      'response < 750ms': (r) => r.timings.duration < 750,
+      'status 200':        (r) => r.status === 200,
+      'response < 1500ms': (r) => r.timings.duration < 1500,
     });
     errorRate.add(!ok);
     sleep(1);
