@@ -3,47 +3,71 @@ image: mcr.microsoft.com/playwright:v1.50.0-jammy
 definitions:
   caches:
     npm: ~/.npm
+  steps:
+    - step: &lighthouse-ci
+        name: Lighthouse CI
+        size: 2x
+        script:
+          - npm install -g @lhci/cli@0.15.1
+          - wget -q -O - https://dl.google.com/linux/linux_signing_key.pub | gpg --dearmor > /usr/share/keyrings/google-chrome.gpg
+          - echo "deb [arch=amd64 signed-by=/usr/share/keyrings/google-chrome.gpg] http://dl.google.com/linux/chrome/deb/ stable main" > /etc/apt/sources.list.d/google-chrome.list
+          - apt-get update -qq && apt-get install -y google-chrome-stable
+          - export CHROME_PATH=$(which google-chrome-stable)
+          - echo "Chrome found at $CHROME_PATH"
+          - lhci autorun
+          - node scripts/lighthouse-slack-report.js
+        artifacts:
+          - .lighthouseci/**
+    - step: &visual-regression
+        name: Visual Regression
+        size: 2x
+        caches:
+          - npm
+        script:
+          - npm ci
+          - ./node_modules/.bin/playwright install chromium webkit
+          - |
+            CI=1 BASE_URL=https://stage.livguardsolar.com/ \
+            ./node_modules/.bin/playwright test \
+              tests/visual/rooftop-solar.visual.spec.ts \
+              tests/visual/solar-for-home.visual.spec.ts \
+              tests/visual/solar-for-commercial.visual.spec.ts \
+              tests/visual/homepage.visual.spec.ts \
+              --project=chromium-desktop \
+              --project=mobile-chrome \
+              --project=mobile-safari \
+              --workers=100% \
+              --retries=2
+        artifacts:
+          - reports/**
+          - test-results/**
+    - step: &design-to-code
+        name: Design-to-Code Validation
+        size: 2x
+        caches:
+          - npm
+        script:
+          - npm ci
+          - ./node_modules/.bin/playwright install chromium
+          - npx ts-node tests/linear/design-to-code-validation.spec.ts
 
 pipelines:
   default:
     - parallel:
-      - step:
-          name: Lighthouse CI
-          size: 2x
-          script:
-            - npm install -g @lhci/cli@0.15.1
-            - wget -q -O - https://dl.google.com/linux/linux_signing_key.pub | gpg --dearmor > /usr/share/keyrings/google-chrome.gpg
-            - echo "deb [arch=amd64 signed-by=/usr/share/keyrings/google-chrome.gpg] http://dl.google.com/linux/chrome/deb/ stable main" > /etc/apt/sources.list.d/google-chrome.list
-            - apt-get update -qq && apt-get install -y google-chrome-stable
-            - export CHROME_PATH=$(which google-chrome-stable)
-            - echo "Chrome found at $CHROME_PATH"
-            - lhci autorun
-            - node scripts/lighthouse-slack-report.js
-          artifacts:
-            - .lighthouseci/**
-      - step:
-          name: Visual Regression
-          size: 2x
-          caches:
-            - npm
-          script:
-            - npm ci
-            - ./node_modules/.bin/playwright install chromium webkit
-            - |
-              CI=1 BASE_URL=https://stage.livguardsolar.com/ \
-              ./node_modules/.bin/playwright test \
-                tests/visual/rooftop-solar.visual.spec.ts \
-                tests/visual/solar-for-home.visual.spec.ts \
-                tests/visual/solar-for-commercial.visual.spec.ts \
-                tests/visual/homepage.visual.spec.ts \
-                --project=chromium-desktop \
-                --project=mobile-chrome \
-                --project=mobile-safari \
-                --workers=100% \
-                --retries=2
-          artifacts:
-            - reports/**
-            - test-results/**
+      - step: *lighthouse-ci
+      - step: *visual-regression
+
+  branches:
+    'ui/**':
+      - parallel:
+        - step: *lighthouse-ci
+        - step: *visual-regression
+        - step: *design-to-code
+    'design/**':
+      - parallel:
+        - step: *lighthouse-ci
+        - step: *visual-regression
+        - step: *design-to-code
 
   custom:
     master-update:
