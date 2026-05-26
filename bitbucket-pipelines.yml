@@ -137,7 +137,7 @@ pipelines:
           name: k6 Load Test
           image: grafana/k6:latest
           script:
-            - k6 run --env STAGING_URL=$STAGING_URL --summary-export=k6-summary.json tests/performance/load.k6.js
+            - k6 run --env STAGING_URL=$STAGING_URL --env K6_BYPASS_TOKEN=$K6_BYPASS_TOKEN --summary-export=k6-summary.json tests/performance/load.k6.js
           artifacts:
             - k6-summary.json
       - step:
