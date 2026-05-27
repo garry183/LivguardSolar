@@ -5,7 +5,7 @@ import { Rate, Trend, Counter } from 'k6/metrics';
 const errorRate = new Rate('errors');
 const status429 = new Counter('status_429');
 const status5xx = new Counter('status_5xx');
-const BASE_URL = __ENV.STAGING_URL;
+const BASE_URL = (__ENV.STAGING_URL || '').replace(/\/$/, '');
 
 export const options = {
   scenarios: {
