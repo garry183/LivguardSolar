@@ -38,9 +38,14 @@ definitions:
               --project=mobile-safari \
               --workers=100% \
               --retries=2
+          - npx ts-node brain/analyze.ts
         artifacts:
           - reports/**
           - test-results/**
+    - step: &visual-slack
+        name: Visual Regression Slack Report
+        script:
+          - node scripts/visual-slack-report.js
     - step: &design-to-code
         name: Design-to-Code Validation
         size: 2x
@@ -56,6 +61,7 @@ pipelines:
     - parallel:
       - step: *lighthouse-ci
       - step: *visual-regression
+    - step: *visual-slack
 
   branches:
     'ui/**':
@@ -63,11 +69,13 @@ pipelines:
         - step: *lighthouse-ci
         - step: *visual-regression
         - step: *design-to-code
+      - step: *visual-slack
     'design/**':
       - parallel:
         - step: *lighthouse-ci
         - step: *visual-regression
         - step: *design-to-code
+      - step: *visual-slack
 
   custom:
     master-update:
