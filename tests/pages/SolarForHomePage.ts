@@ -1,9 +1,6 @@
 import { mkdirSync } from 'fs';
-import path from 'path';
 import { Page, Locator } from '@playwright/test';
 import { freezeAnimations, triggerLazyLoad, waitForAllImages } from '../utils/visualHelpers';
-
-const HAR_PATH = path.resolve(__dirname, '..', 'fixtures', 'har', 'solar-for-home.har');
 
 export class SolarForHomePage {
   readonly page: Page;
@@ -63,15 +60,6 @@ export class SolarForHomePage {
   }
 
   async goto(): Promise<void> {
-    // Re-record responses locally with RECORD_HAR=1 when site content changes.
-    if (process.env.RECORD_HAR) {
-      await this.page.routeFromHAR(HAR_PATH, {
-        url: /(stage|cdndev)\.livguardsolar\.com/,
-        update: true,
-        updateContent: 'embed',
-      });
-    }
-
     // Navigate directly to the staging URL — this page object targets the
     // staging environment, not the production baseURL set in playwright.config.ts.
     await this.page.goto('https://stage.livguardsolar.com/solar-for-home', {

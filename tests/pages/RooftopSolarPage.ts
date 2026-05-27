@@ -1,9 +1,6 @@
 import { mkdirSync } from 'fs';
-import path from 'path';
 import { Page, Locator } from '@playwright/test';
 import { freezeAnimations, triggerLazyLoad, waitForAllImages } from '../utils/visualHelpers';
-
-const HAR_PATH = path.resolve(__dirname, '..', 'fixtures', 'har', 'rooftop-solar.har');
 
 export class RooftopSolarPage {
   readonly page: Page;
@@ -115,15 +112,6 @@ export class RooftopSolarPage {
   }
 
   async goto(): Promise<void> {
-    // Re-record responses locally with RECORD_HAR=1 when site content changes.
-    if (process.env.RECORD_HAR) {
-      await this.page.routeFromHAR(HAR_PATH, {
-        url: /(stage|cdndev)\.livguardsolar\.com/,
-        update: true,
-        updateContent: 'embed',
-      });
-    }
-
     // Block third-party scripts that the page waits on before revealing content.
     await this.page.route(
       /\.(google-analytics\.com|googletagmanager\.com|fonts\.googleapis\.com|fonts\.gstatic\.com|connect\.facebook\.net|hotjar\.com|clarity\.ms|doubleclick\.net)/,

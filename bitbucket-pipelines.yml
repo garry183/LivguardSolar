@@ -88,22 +88,8 @@ pipelines:
             - npm ci
             - ./node_modules/.bin/playwright install chromium webkit
             - |
-              if [ "$SPEC" = "homepage" ]; then
-                echo "==> Step 1/3: Skipping HAR re-record for homepage."
-                echo "    cdndev.livguardsolar.com is WAF-blocked from Bitbucket runners."
-                echo "    Record locally: npm run test:record-har:homepage  then commit the HAR."
-              else
-                case "$SPEC" in
-                  rooftop-solar)        HAR_SCRIPT="scripts/record-har-rooftop-solar.ts" ;;
-                  solar-for-home)       HAR_SCRIPT="scripts/record-har-solar-for-home.ts" ;;
-                  solar-for-commercial) HAR_SCRIPT="scripts/record-har-solar-for-commercial.ts" ;;
-                esac
-                echo "==> Step 1/3: Re-recording HAR for $SPEC..."
-                BASE_URL=https://stage.livguardsolar.com/ npx ts-node "$HAR_SCRIPT"
-              fi
-            - |
               PROJECTS="--project=chromium-desktop --project=mobile-chrome --project=mobile-safari"
-              echo "==> Step 2/3: Re-snapping baselines for $SPEC..."
+              echo "==> Step 1/2: Re-snapping baselines for $SPEC..."
               set +e
               BASE_URL=https://stage.livguardsolar.com/ \
               ./node_modules/.bin/playwright test \
@@ -115,18 +101,18 @@ pipelines:
               set -e
               echo "Snapshot update complete."
             - |
-              echo "==> Step 3/3: Committing updated HAR + snapshots..."
+              echo "==> Step 2/2: Committing updated snapshots..."
               git config user.email "ci-pipeline@livguardsolar.com"
               git config user.name "Bitbucket CI [master-update]"
               printf 'machine bitbucket.org\nlogin %s\npassword %s\n' "${BB_USER}" "${BB_APP_PASSWORD}" > ~/.netrc
               chmod 600 ~/.netrc
-              git add tests/fixtures/har/ tests/visual/__snapshots__/
+              git add tests/visual/__snapshots__/
               if git diff --cached --quiet; then
-                echo "No changes detected — HAR and snapshots are already up to date."
+                echo "No changes detected — snapshots are already up to date."
               else
-                git commit -m "chore(ci): master-update ${SPEC} — refresh HAR + snapshots [skip ci]"
+                git commit -m "chore(ci): master-update ${SPEC} — refresh snapshots [skip ci]"
                 git push origin HEAD:master
-                echo "Done. Pushed updated files to master."
+                echo "Done. Pushed updated snapshots to master."
               fi
           artifacts:
             - tests/fixtures/har/**

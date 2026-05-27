@@ -31,12 +31,6 @@ npx playwright test tests/visual/homepage.visual.spec.ts --project=chromium-desk
 # Simulate CI locally (enables parallel workers, retries)
 CI=1 BASE_URL=https://stage.livguardsolar.com npx playwright test
 
-# Re-record a HAR file (run locally when site content changes)
-npm run test:record-har:homepage
-npm run test:record-har:rooftop-solar
-npm run test:record-har:solar-for-home
-npm run test:record-har:solar-for-commercial
-
 # Lighthouse performance audit (needs STAGING_URL set)
 STAGING_URL=https://stage.livguardsolar.com npm run perf:lighthouse
 

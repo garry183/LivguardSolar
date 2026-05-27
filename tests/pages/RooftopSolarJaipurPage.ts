@@ -1,9 +1,6 @@
 import { mkdirSync } from 'fs';
-import path from 'path';
 import { Page } from '@playwright/test';
 import { RooftopSolarPage } from './RooftopSolarPage';
-
-const HAR_PATH = path.resolve(__dirname, '..', 'fixtures', 'har', 'rooftop-solar-jaipur.har');
 
 /**
  * Page object for https://stage.livguardsolar.com/rooftop-solar-jaipur
@@ -21,15 +18,6 @@ export class RooftopSolarJaipurPage extends RooftopSolarPage {
   }
 
   override async goto(): Promise<void> {
-    // Re-record responses locally with RECORD_HAR=1 when site content changes.
-    if (process.env.RECORD_HAR) {
-      await this.page.routeFromHAR(HAR_PATH, {
-        url: /(stage|cdndev)\.livguardsolar\.com/,
-        update: true,
-        updateContent: 'embed',
-      });
-    }
-
     // Block third-party scripts that the page waits on before revealing content.
     await this.page.route(
       /\.(google-analytics\.com|googletagmanager\.com|fonts\.googleapis\.com|fonts\.gstatic\.com|connect\.facebook\.net|hotjar\.com|clarity\.ms|doubleclick\.net)/,

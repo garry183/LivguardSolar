@@ -1,9 +1,6 @@
 import { mkdirSync } from 'fs';
-import path from 'path';
 import { Page, Locator } from '@playwright/test';
 import { freezeAnimations, triggerLazyLoad, waitForAllImages } from '../utils/visualHelpers';
-
-const HAR_PATH = path.resolve(__dirname, '..', 'fixtures', 'har', 'homepage.har');
 
 export class HomePage {
   readonly page: Page;
@@ -63,15 +60,6 @@ export class HomePage {
   }
 
   async goto(): Promise<void> {
-    // Re-record responses locally with RECORD_HAR=1 when site content changes.
-    if (process.env.RECORD_HAR) {
-      await this.page.routeFromHAR(HAR_PATH, {
-        url: /(stage|cdndev)\.livguardsolar\.com/,
-        update: true,
-        updateContent: 'embed',
-      });
-    }
-
     // Suppress CTA modal before page scripts run — modal sets body{overflow:hidden}
     // which silently breaks all subsequent scroll calls and prevents IntersectionObserver
     // from firing, leaving all below-fold sections as empty <div>s.
