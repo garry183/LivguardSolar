@@ -132,6 +132,39 @@ pipelines:
             - tests/fixtures/har/**
             - tests/visual/__snapshots__/**
             - reports/**
+    visual-smoke:
+      - variables:
+          - name: SPEC
+            default: homepage
+            allowed-values:
+              - homepage
+              - rooftop-solar
+              - solar-for-home
+              - solar-for-commercial
+          - name: PROJECT
+            default: chromium-desktop
+            allowed-values:
+              - chromium-desktop
+              - mobile-chrome
+              - mobile-safari
+      - step:
+          name: "Visual Smoke: 1 spec × 1 project"
+          size: 2x
+          caches:
+            - npm
+          script:
+            - npm ci
+            - ./node_modules/.bin/playwright install chromium webkit
+            - |
+              CI=1 BASE_URL=https://stage.livguardsolar.com/ \
+              ./node_modules/.bin/playwright test \
+                "tests/visual/${SPEC}.visual.spec.ts" \
+                --project=${PROJECT} \
+                --workers=100% \
+                --retries=1
+          artifacts:
+            - reports/**
+            - test-results/**
     load-test:
       - step:
           name: k6 Load Test

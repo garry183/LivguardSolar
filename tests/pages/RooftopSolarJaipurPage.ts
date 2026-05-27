@@ -1,4 +1,4 @@
-import { mkdirSync, existsSync, statSync } from 'fs';
+import { mkdirSync } from 'fs';
 import path from 'path';
 import { Page } from '@playwright/test';
 import { RooftopSolarPage } from './RooftopSolarPage';
@@ -12,10 +12,8 @@ const HAR_PATH = path.resolve(__dirname, '..', 'fixtures', 'har', 'rooftop-solar
  * self-healing .or() fallbacks. Only goto() is overridden to target the
  * city-specific URL.
  *
- * HAR workflow:
- *   1. Record locally:  npm run test:record-har:jaipur
- *   2. Commit the HAR:  git add tests/fixtures/har/
- *   3. CI replays HAR — all API-driven sections render without staging API access
+ * HAR workflow: run locally with RECORD_HAR=1 to re-record when site content changes,
+ * then commit the updated HAR file.
  */
 export class RooftopSolarJaipurPage extends RooftopSolarPage {
   constructor(page: Page) {
@@ -23,34 +21,12 @@ export class RooftopSolarJaipurPage extends RooftopSolarPage {
   }
 
   override async goto(): Promise<void> {
-    // ── HAR replay/record ──
-    // In CI: replay recorded responses hermetically. Bitbucket Pipelines can't
-    // reach cdndev.livguardsolar.com (where the JS/CSS bundles are hosted), so
-    // we must bundle stage + cdndev responses into the HAR for offline replay.
-    // Without this, React never hydrates and below-fold sections never render.
-    //
-    // Locally with RECORD_HAR=1: capture fresh responses from both domains.
-    const HAR_DOMAINS = /(stage|cdndev)\.livguardsolar\.com/;
-    if (process.env.CI) {
-      const harExists = existsSync(HAR_PATH);
-      const harSize = harExists ? statSync(HAR_PATH).size : 'N/A';
-      console.log('[HAR] path=', HAR_PATH, 'exists=', harExists, 'size=', harSize);
-
-      // 'abort' surfaces HAR misses as net::ERR_FAILED (visible in requestfailed events).
+    // Re-record responses locally with RECORD_HAR=1 when site content changes.
+    if (process.env.RECORD_HAR) {
       await this.page.routeFromHAR(HAR_PATH, {
-        url: HAR_DOMAINS,
-        notFound: 'abort',
-      });
-
-      // Log every failed request so we can see which URLs HAR couldn't serve.
-      this.page.on('requestfailed', req => {
-        console.log('[REQ FAILED]', req.url(), req.failure()?.errorText);
-      });
-    } else if (process.env.RECORD_HAR) {
-      await this.page.routeFromHAR(HAR_PATH, {
-        url: HAR_DOMAINS,
+        url: /(stage|cdndev)\.livguardsolar\.com/,
         update: true,
-        updateContent: 'embed', // store response bodies inline so HAR works offline in CI
+        updateContent: 'embed',
       });
     }
 
