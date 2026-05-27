@@ -61,6 +61,9 @@ export default function () {
       'status 200':        (r) => r.status === 200,
       'response < 1500ms': (r) => r.timings.duration < 1500,
     });
+    if (res.status !== 200) {
+      console.log(`FAIL [${name}] status=${res.status} url=${res.url}`);
+    }
     errorRate.add(!ok);
     sleep(1);
   });
