@@ -134,6 +134,19 @@ export async function resetCarouselToFirst(page: Page): Promise<void> {
   await page.waitForTimeout(100);
 }
 
+/**
+ * Blocks analytics/tracking scripts before page navigation.
+ * Call this on the page object BEFORE goto() — route handlers must be registered
+ * before the first request fires.
+ * RudderStack takes 13s to init on CI runners; Facebook Pixel times out at 11s.
+ */
+export async function blockThirdPartyScripts(page: Page): Promise<void> {
+  await page.route(
+    /rudderstack|rudderlabs|dataplane|facebook\.net|connect\.facebook|fbevents|fbq|google-analytics|googletagmanager|gtm\.js|hotjar|clarity\.ms|doubleclick/,
+    route => route.abort(),
+  );
+}
+
 /** Build a consistent, filename-safe snapshot name. */
 export function snapshotName(...parts: string[]): string {
   return (

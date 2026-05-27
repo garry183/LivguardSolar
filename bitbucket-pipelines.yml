@@ -18,16 +18,17 @@ definitions:
           - node scripts/lighthouse-slack-report.js
         artifacts:
           - .lighthouseci/**
-    - step: &visual-regression
-        name: Visual Regression + Slack Report
+    - step: &visual-chromium
+        name: "Visual – chromium-desktop"
         size: 2x
         caches:
           - npm
         script:
           - npm ci
-          - ./node_modules/.bin/playwright install chromium webkit
+          - ./node_modules/.bin/playwright install chromium
           - |
             set +e
+            BLOB_FILENAME=chromium-desktop \
             CI=1 BASE_URL=https://stage.livguardsolar.com/ \
             ./node_modules/.bin/playwright test \
               tests/visual/rooftop-solar.visual.spec.ts \
@@ -35,17 +36,72 @@ definitions:
               tests/visual/solar-for-commercial.visual.spec.ts \
               tests/visual/homepage.visual.spec.ts \
               --project=chromium-desktop \
+              --workers=4 \
+              --retries=1
+            exit $?
+        artifacts:
+          - blob-report/**
+    - step: &visual-mobile-chrome
+        name: "Visual – mobile-chrome"
+        size: 2x
+        caches:
+          - npm
+        script:
+          - npm ci
+          - ./node_modules/.bin/playwright install chromium
+          - |
+            set +e
+            BLOB_FILENAME=mobile-chrome \
+            CI=1 BASE_URL=https://stage.livguardsolar.com/ \
+            ./node_modules/.bin/playwright test \
+              tests/visual/rooftop-solar.visual.spec.ts \
+              tests/visual/solar-for-home.visual.spec.ts \
+              tests/visual/solar-for-commercial.visual.spec.ts \
+              tests/visual/homepage.visual.spec.ts \
               --project=mobile-chrome \
+              --workers=4 \
+              --retries=1
+            exit $?
+        artifacts:
+          - blob-report/**
+    - step: &visual-mobile-safari
+        name: "Visual – mobile-safari"
+        size: 2x
+        caches:
+          - npm
+        script:
+          - npm ci
+          - ./node_modules/.bin/playwright install webkit
+          - |
+            set +e
+            BLOB_FILENAME=mobile-safari \
+            CI=1 BASE_URL=https://stage.livguardsolar.com/ \
+            ./node_modules/.bin/playwright test \
+              tests/visual/rooftop-solar.visual.spec.ts \
+              tests/visual/solar-for-home.visual.spec.ts \
+              tests/visual/solar-for-commercial.visual.spec.ts \
+              tests/visual/homepage.visual.spec.ts \
               --project=mobile-safari \
-              --workers=100% \
-              --retries=2
-            PLAYWRIGHT_EXIT=$?
-            npx ts-node brain/analyze.ts || echo "[brain] analysis failed, skipping"
-            node scripts/visual-slack-report.js || echo "[slack] report failed, skipping"
-            exit $PLAYWRIGHT_EXIT
+              --workers=4 \
+              --retries=1
+            exit $?
+        artifacts:
+          - blob-report/**
+    - step: &visual-merge
+        name: "Visual – Merge + Brain + Slack"
+        caches:
+          - npm
+        script:
+          - npm ci
+          - |
+            set +e
+            MERGE_REPORTS=1 npx playwright merge-reports ./blob-report
+            MERGE_EXIT=$?
+            npx ts-node brain/analyze.ts || echo "[brain] failed, skipping"
+            node scripts/visual-slack-report.js || echo "[slack] failed, skipping"
+            exit $MERGE_EXIT
         artifacts:
           - reports/**
-          - test-results/**
     - step: &design-to-code
         name: Design-to-Code Validation
         size: 2x
@@ -58,17 +114,27 @@ definitions:
 
 pipelines:
   default:
-    - step: *visual-regression
+    - parallel:
+      - step: *visual-chromium
+      - step: *visual-mobile-chrome
+      - step: *visual-mobile-safari
+    - step: *visual-merge
 
   branches:
     'ui/**':
       - parallel:
-        - step: *visual-regression
+        - step: *visual-chromium
+        - step: *visual-mobile-chrome
+        - step: *visual-mobile-safari
         - step: *design-to-code
+      - step: *visual-merge
     'design/**':
       - parallel:
-        - step: *visual-regression
+        - step: *visual-chromium
+        - step: *visual-mobile-chrome
+        - step: *visual-mobile-safari
         - step: *design-to-code
+      - step: *visual-merge
 
   custom:
     master-update:

@@ -29,7 +29,9 @@ function ruleRealRegression({
   allEntriesThisRun,
   currentHealth,
 }: RuleContext): FailureCategory | null {
-  const projects = ['chromium-desktop', 'mobile-chrome', 'mobile-safari'];
+  // mobile-safari skips many tests — requiring all 3 means REAL_REGRESSION never fires.
+  // Two-project check is sufficient to confirm cross-browser regression.
+  const projects = ['chromium-desktop', 'mobile-chrome'];
   const allFailed = projects.every(p =>
     allEntriesThisRun.some(
       e => e.testName === entry.testName && e.project === p && e.status === 'failed'

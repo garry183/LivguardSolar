@@ -20,6 +20,7 @@ export default defineConfig({
       threshold: 0.2,
       animations: 'disabled',
       maskColor: '#e0e0e0',
+      stylePath: './tests/utils/snapshot.css',
     },
   },
 
@@ -35,13 +36,24 @@ export default defineConfig({
   snapshotPathTemplate:
     '{testDir}/visual/__snapshots__/{testFilePath}/{arg}-{projectName}{ext}',
 
-  reporter: [
-    ['list'],
-    ['json', { outputFile: 'reports/playwright-report.json' }],
-    ['html', { outputFolder: 'reports/html', open: 'never' }],
-    ['junit', { outputFile: 'reports/junit/results.xml' }],
-    ['allure-playwright', { outputFolder: 'allure-results', suiteTitle: false }],
-  ],
+  // CI parallel steps write blob only; merge step uses MERGE_REPORTS=1 to produce
+  // json/html/junit from the combined blob-report/ artifacts of all 3 browser shards.
+  reporter: process.env.MERGE_REPORTS
+    ? [
+        ['list'],
+        ['json', { outputFile: 'reports/playwright-report.json' }],
+        ['html', { outputFolder: 'reports/html', open: 'never' }],
+        ['junit', { outputFile: 'reports/junit/results.xml' }],
+      ]
+    : process.env.CI
+    ? [
+        ['blob', { outputDir: 'blob-report', fileName: `${process.env.BLOB_FILENAME ?? 'blob'}.zip` }],
+        ['list'],
+      ]
+    : [
+        ['list'],
+        ['html', { outputFolder: 'reports/html', open: 'never' }],
+      ],
 
   outputDir: 'reports/test-results',
 
