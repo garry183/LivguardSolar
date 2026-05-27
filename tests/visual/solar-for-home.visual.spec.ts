@@ -164,14 +164,6 @@ test.describe('Solar for Home – Section snapshots', () => {
   });
 
   test('section – Nationwide Reach', async ({ solarForHomePage }, testInfo) => {
-    // Same WebKit IO issue as "In the News": the heading text "Nationwide Reach"
-    // is API-driven and does not load within 150 s on mobile-safari without a prior
-    // in-the-news scroll warming up the API cache. Skip on WebKit until a structural
-    // locator is available. chromium-desktop and mobile-chrome provide full coverage.
-    test.skip(
-      testInfo.project.name === 'mobile-safari',
-      'API-driven heading does not load within 150 s on WebKit: section covered by chromium-desktop + mobile-chrome',
-    );
     await solarForHomePage.scrollToSection(solarForHomePage.nationwideReachSection);
     await freezeAnimations(solarForHomePage.page);
     await expect(solarForHomePage.nationwideReachSection).toHaveScreenshot(
@@ -181,14 +173,6 @@ test.describe('Solar for Home – Section snapshots', () => {
   });
 
   test('section – Who Are We', async ({ solarForHomePage }, testInfo) => {
-    // Same WebKit IO / API-latency issue as "In the News" and "Nationwide Reach":
-    // the heading text "who are we" does not load within 150 s on mobile-safari
-    // without prior sections having scrolled past this area and warmed the API.
-    // Covered by chromium-desktop and mobile-chrome.
-    test.skip(
-      testInfo.project.name === 'mobile-safari',
-      'API-driven heading does not load within 150 s on WebKit: covered by chromium-desktop + mobile-chrome',
-    );
     await solarForHomePage.scrollToSection(solarForHomePage.whoAreWeSection);
     await freezeAnimations(solarForHomePage.page);
     await expect(solarForHomePage.whoAreWeSection).toHaveScreenshot(
@@ -200,13 +184,6 @@ test.describe('Solar for Home – Section snapshots', () => {
   });
 
   test('section – Testimonials', async ({ solarForHomePage }, testInfo) => {
-    // Testimonials ("happy customers") uses a text filter that may fail on
-    // mobile-safari once "Who Are We" is skipped (API cache no longer warmed).
-    // Skip on WebKit as a precaution; chromium-desktop and mobile-chrome provide coverage.
-    test.skip(
-      testInfo.project.name === 'mobile-safari',
-      'API-driven carousel content may not load within 150 s on WebKit without prior-section warm-up',
-    );
     await solarForHomePage.scrollToSection(solarForHomePage.testimonialsSection);
     // Re-freeze after scroll: testimonial carousel restarts on IO re-fire.
     await freezeAnimations(solarForHomePage.page);
