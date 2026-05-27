@@ -187,5 +187,13 @@ export class HomePage {
       el.scrollIntoView({ behavior: 'instant', block: 'center' });
     });
     await this.page.waitForTimeout(500);
+
+    // Cookie banner can re-appear on scroll (React component re-mounts on IO fire).
+    // Dismiss it here so it doesn't overlay section screenshots.
+    try {
+      await this.page.getByRole('button', { name: /got it/i }).click({ timeout: 2_000 });
+    } catch {
+      // Banner absent or already dismissed.
+    }
   }
 }

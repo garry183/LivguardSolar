@@ -19,7 +19,7 @@ definitions:
         artifacts:
           - .lighthouseci/**
     - step: &visual-regression
-        name: Visual Regression
+        name: Visual Regression + Slack Report
         size: 2x
         caches:
           - npm
@@ -27,6 +27,7 @@ definitions:
           - npm ci
           - ./node_modules/.bin/playwright install chromium webkit
           - |
+            set +e
             CI=1 BASE_URL=https://stage.livguardsolar.com/ \
             ./node_modules/.bin/playwright test \
               tests/visual/rooftop-solar.visual.spec.ts \
@@ -38,14 +39,13 @@ definitions:
               --project=mobile-safari \
               --workers=100% \
               --retries=2
-          - npx ts-node brain/analyze.ts
+            PLAYWRIGHT_EXIT=$?
+            npx ts-node brain/analyze.ts || echo "[brain] analysis failed, skipping"
+            node scripts/visual-slack-report.js || echo "[slack] report failed, skipping"
+            exit $PLAYWRIGHT_EXIT
         artifacts:
           - reports/**
           - test-results/**
-    - step: &visual-slack
-        name: Visual Regression Slack Report
-        script:
-          - node scripts/visual-slack-report.js
     - step: &design-to-code
         name: Design-to-Code Validation
         size: 2x
@@ -59,19 +59,16 @@ definitions:
 pipelines:
   default:
     - step: *visual-regression
-    - step: *visual-slack
 
   branches:
     'ui/**':
       - parallel:
         - step: *visual-regression
         - step: *design-to-code
-      - step: *visual-slack
     'design/**':
       - parallel:
         - step: *visual-regression
         - step: *design-to-code
-      - step: *visual-slack
 
   custom:
     master-update:
@@ -115,6 +112,7 @@ pipelines:
                 echo "No changes detected — snapshots are already up to date."
               else
                 git commit -m "chore(ci): master-update ${SPEC} — refresh snapshots [skip ci]"
+                git pull --rebase origin master
                 git push origin HEAD:master
                 echo "Done. Pushed updated snapshots to master."
               fi
