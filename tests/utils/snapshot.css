@@ -1,0 +1,4 @@
+/* Hide sticky nav during visual snapshots — it overlays section content at scroll-capture time */
+.header_sticky {
+  display: none !important;
+}
