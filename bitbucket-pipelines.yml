@@ -58,21 +58,17 @@ definitions:
 
 pipelines:
   default:
-    - parallel:
-      - step: *lighthouse-ci
-      - step: *visual-regression
+    - step: *visual-regression
     - step: *visual-slack
 
   branches:
     'ui/**':
       - parallel:
-        - step: *lighthouse-ci
         - step: *visual-regression
         - step: *design-to-code
       - step: *visual-slack
     'design/**':
       - parallel:
-        - step: *lighthouse-ci
         - step: *visual-regression
         - step: *design-to-code
       - step: *visual-slack
@@ -126,6 +122,8 @@ pipelines:
             - tests/fixtures/har/**
             - tests/visual/__snapshots__/**
             - reports/**
+    lighthouse:
+      - step: *lighthouse-ci
     visual-smoke:
       - variables:
           - name: SPEC
