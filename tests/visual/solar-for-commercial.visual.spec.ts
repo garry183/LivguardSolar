@@ -101,10 +101,11 @@ test.describe('Solar for Commercial – Section snapshots', () => {
     await freezeAnimations(solarForCommercialPage.page);
     await solarForCommercialPage.page.waitForTimeout(2_000);
     await freezeAnimations(solarForCommercialPage.page);
-    await expect(solarForCommercialPage.navbar).toHaveScreenshot(
-      'solar-for-commercial-navbar.png',
-      { timeout: 30_000 },
-    );
+    const box = await solarForCommercialPage.navbar.boundingBox();
+    await expect(solarForCommercialPage.page).toHaveScreenshot('solar-for-commercial-navbar.png', {
+      clip: { x: 0, y: 0, width: box!.width, height: box!.height },
+      timeout: 30_000,
+    });
   });
 
   test('section – hero', async ({ solarForCommercialPage }) => {
@@ -248,10 +249,11 @@ test.describe('Solar for Commercial – Mobile responsive snapshots', () => {
     await freezeAnimations(solarForCommercialPage.page);
     await solarForCommercialPage.page.waitForTimeout(2_000);
     await freezeAnimations(solarForCommercialPage.page);
-    await expect(solarForCommercialPage.navbar).toHaveScreenshot(
-      'solar-for-commercial-mobile-navbar.png',
-      { timeout: 30_000 },
-    );
+    const box = await solarForCommercialPage.navbar.boundingBox();
+    await expect(solarForCommercialPage.page).toHaveScreenshot('solar-for-commercial-mobile-navbar.png', {
+      clip: { x: 0, y: 0, width: box!.width, height: box!.height },
+      timeout: 30_000,
+    });
   });
 
   test('mobile – hero', async ({ solarForCommercialPage }) => {

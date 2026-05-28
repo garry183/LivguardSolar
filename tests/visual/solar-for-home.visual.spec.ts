@@ -99,7 +99,9 @@ test.describe('Solar for Home – Section snapshots', () => {
     await freezeAnimations(solarForHomePage.page);
     await solarForHomePage.page.waitForTimeout(2_000);
     await freezeAnimations(solarForHomePage.page);
-    await expect(solarForHomePage.navbar).toHaveScreenshot('solar-for-home-navbar.png', {
+    const box = await solarForHomePage.navbar.boundingBox();
+    await expect(solarForHomePage.page).toHaveScreenshot('solar-for-home-navbar.png', {
+      clip: { x: 0, y: 0, width: box!.width, height: box!.height },
       timeout: 30_000,
     });
   });
@@ -221,7 +223,9 @@ test.describe('Solar for Home – Mobile responsive snapshots', () => {
     await freezeAnimations(solarForHomePage.page);
     await solarForHomePage.page.waitForTimeout(2_000);
     await freezeAnimations(solarForHomePage.page);
-    await expect(solarForHomePage.navbar).toHaveScreenshot('solar-for-home-mobile-navbar.png', {
+    const box = await solarForHomePage.navbar.boundingBox();
+    await expect(solarForHomePage.page).toHaveScreenshot('solar-for-home-mobile-navbar.png', {
+      clip: { x: 0, y: 0, width: box!.width, height: box!.height },
       timeout: 30_000,
     });
   });

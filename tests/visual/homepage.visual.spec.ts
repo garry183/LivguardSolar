@@ -101,7 +101,13 @@ test.describe('Homepage – Section snapshots', () => {
     await freezeAnimations(homePage.page);
     await homePage.page.waitForTimeout(2_000);
     await freezeAnimations(homePage.page);
-    await expect(homePage.navbar).toHaveScreenshot('homepage-navbar.png', { timeout: 30_000 });
+    // Page+clip avoids Playwright's element bounding-box stability check which
+    // never settles when the navbar has sub-pixel layout shifts between measurements.
+    const box = await homePage.navbar.boundingBox();
+    await expect(homePage.page).toHaveScreenshot('homepage-navbar.png', {
+      clip: { x: 0, y: 0, width: box!.width, height: box!.height },
+      timeout: 30_000,
+    });
   });
 
   test('section – hero', async ({ homePage }) => {
@@ -197,7 +203,11 @@ test.describe('Homepage – Mobile responsive snapshots', () => {
     await freezeAnimations(homePage.page);
     await homePage.page.waitForTimeout(2_000);
     await freezeAnimations(homePage.page);
-    await expect(homePage.navbar).toHaveScreenshot('homepage-mobile-navbar.png', { timeout: 30_000 });
+    const box = await homePage.navbar.boundingBox();
+    await expect(homePage.page).toHaveScreenshot('homepage-mobile-navbar.png', {
+      clip: { x: 0, y: 0, width: box!.width, height: box!.height },
+      timeout: 30_000,
+    });
   });
 
   test('mobile – hero', async ({ homePage }) => {
