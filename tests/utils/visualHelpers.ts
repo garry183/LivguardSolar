@@ -36,10 +36,15 @@ export async function freezeAnimations(page: Page): Promise<void> {
     }
     window.requestAnimationFrame = () => 0;
     // Kill Web Animations API animations (element.animate(), Framer Motion, GSAP WAAPI).
-    // These survive CSS overrides and timer clearing — finish() jumps to end state so
-    // the element is fully visible/at rest rather than reset to hidden initial state.
+    // finish() fires animationend which React intercepts and restarts the animation.
+    // Instead: jump currentTime to duration then pause() — element lands at end state
+    // without dispatching animationend, so React never restarts it.
     document.getAnimations().forEach(anim => {
-      try { anim.finish(); } catch { try { anim.pause(); } catch {} }
+      try {
+        const dur = (anim.effect as KeyframeEffect)?.getTiming?.()?.duration;
+        if (typeof dur === 'number' && dur > 0) anim.currentTime = dur;
+        anim.pause();
+      } catch {}
     });
   });
 }
