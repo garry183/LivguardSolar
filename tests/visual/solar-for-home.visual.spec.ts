@@ -90,12 +90,13 @@ test.describe('Solar for Home – Section snapshots', () => {
   });
 
   test('section – navbar', async ({ solarForHomePage }) => {
-    // Re-freeze after page setup: sticky headers animate on some UA/OS combos.
-    await freezeAnimations(solarForHomePage.page);
-    // Scroll to top so the sticky header is in its normal (non-scrolled) state.
+    // Triple-freeze with 2 s dwells: navbar has IO-triggered animations that restart
+    // after each freeze; three passes clear timers set between passes.
     await solarForHomePage.page.evaluate(() => window.scrollTo(0, 0));
-    // Extra settle time: WebKit (mobile-safari) reflows layout slightly after freeze,
-    // causing Playwright's element-stability check to time out at 15 s.
+    await solarForHomePage.page.waitForTimeout(500);
+    await freezeAnimations(solarForHomePage.page);
+    await solarForHomePage.page.waitForTimeout(2_000);
+    await freezeAnimations(solarForHomePage.page);
     await solarForHomePage.page.waitForTimeout(2_000);
     await freezeAnimations(solarForHomePage.page);
     await expect(solarForHomePage.navbar).toHaveScreenshot('solar-for-home-navbar.png', {
@@ -213,9 +214,12 @@ test.describe('Solar for Home – Mobile responsive snapshots', () => {
   test.use({ viewport: VIEWPORTS.mobile });
 
   test('mobile – navbar', async ({ solarForHomePage }) => {
-    await freezeAnimations(solarForHomePage.page);
     await solarForHomePage.page.evaluate(() => window.scrollTo(0, 0));
-    await solarForHomePage.page.waitForTimeout(1_000);
+    await solarForHomePage.page.waitForTimeout(500);
+    await freezeAnimations(solarForHomePage.page);
+    await solarForHomePage.page.waitForTimeout(2_000);
+    await freezeAnimations(solarForHomePage.page);
+    await solarForHomePage.page.waitForTimeout(2_000);
     await freezeAnimations(solarForHomePage.page);
     await expect(solarForHomePage.navbar).toHaveScreenshot('solar-for-home-mobile-navbar.png', {
       timeout: 30_000,

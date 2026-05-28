@@ -92,10 +92,17 @@ test.describe('Solar for Commercial – Section snapshots', () => {
   });
 
   test('section – navbar', async ({ solarForCommercialPage }) => {
+    // Triple-freeze with 2 s dwells: navbar has IO-triggered animations that restart
+    // after each freeze; three passes clear timers set between passes.
+    await solarForCommercialPage.page.evaluate(() => window.scrollTo(0, 0));
+    await solarForCommercialPage.page.waitForTimeout(500);
+    await freezeAnimations(solarForCommercialPage.page);
+    await solarForCommercialPage.page.waitForTimeout(2_000);
+    await freezeAnimations(solarForCommercialPage.page);
+    await solarForCommercialPage.page.waitForTimeout(2_000);
+    await freezeAnimations(solarForCommercialPage.page);
     await expect(solarForCommercialPage.navbar).toHaveScreenshot(
       'solar-for-commercial-navbar.png',
-      // 30 s: mobile-safari sticky header can keep animating after page load,
-      // causing the default 15 s element-stability check to time out.
       { timeout: 30_000 },
     );
   });
@@ -234,8 +241,16 @@ test.describe('Solar for Commercial – Mobile responsive snapshots', () => {
 
   test('mobile – navbar', async ({ solarForCommercialPage }) => {
     test.setTimeout(120_000);
+    await solarForCommercialPage.page.evaluate(() => window.scrollTo(0, 0));
+    await solarForCommercialPage.page.waitForTimeout(500);
+    await freezeAnimations(solarForCommercialPage.page);
+    await solarForCommercialPage.page.waitForTimeout(2_000);
+    await freezeAnimations(solarForCommercialPage.page);
+    await solarForCommercialPage.page.waitForTimeout(2_000);
+    await freezeAnimations(solarForCommercialPage.page);
     await expect(solarForCommercialPage.navbar).toHaveScreenshot(
       'solar-for-commercial-mobile-navbar.png',
+      { timeout: 30_000 },
     );
   });
 

@@ -117,7 +117,6 @@ pipelines:
     - parallel:
       - step: *visual-chromium
       - step: *visual-mobile-chrome
-      - step: *visual-mobile-safari
     - step: *visual-merge
 
   branches:
@@ -125,14 +124,12 @@ pipelines:
       - parallel:
         - step: *visual-chromium
         - step: *visual-mobile-chrome
-        - step: *visual-mobile-safari
         - step: *design-to-code
       - step: *visual-merge
     'design/**':
       - parallel:
         - step: *visual-chromium
         - step: *visual-mobile-chrome
-        - step: *visual-mobile-safari
         - step: *design-to-code
       - step: *visual-merge
 
@@ -147,7 +144,7 @@ pipelines:
               - solar-for-home
               - solar-for-commercial
       - step:
-          name: "Master Update: Re-record HAR + Re-snap baselines"
+          name: "Master Update: Re-snap baselines"
           size: 4x
           caches:
             - npm

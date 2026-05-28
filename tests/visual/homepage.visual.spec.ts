@@ -92,7 +92,16 @@ test.describe('Homepage – Section snapshots', () => {
   });
 
   test('section – navbar', async ({ homePage }) => {
-    await expect(homePage.navbar).toHaveScreenshot('homepage-navbar.png');
+    // Triple-freeze with 2 s dwells: navbar has IO-triggered animations that restart
+    // after each freeze; three passes clear timers set between passes.
+    await homePage.page.evaluate(() => window.scrollTo(0, 0));
+    await homePage.page.waitForTimeout(500);
+    await freezeAnimations(homePage.page);
+    await homePage.page.waitForTimeout(2_000);
+    await freezeAnimations(homePage.page);
+    await homePage.page.waitForTimeout(2_000);
+    await freezeAnimations(homePage.page);
+    await expect(homePage.navbar).toHaveScreenshot('homepage-navbar.png', { timeout: 30_000 });
   });
 
   test('section – hero', async ({ homePage }) => {
@@ -181,8 +190,14 @@ test.describe('Homepage – Mobile responsive snapshots', () => {
 
   test('mobile – navbar', async ({ homePage }) => {
     test.setTimeout(120_000);
+    await homePage.page.evaluate(() => window.scrollTo(0, 0));
+    await homePage.page.waitForTimeout(500);
     await freezeAnimations(homePage.page);
-    await expect(homePage.navbar).toHaveScreenshot('homepage-mobile-navbar.png');
+    await homePage.page.waitForTimeout(2_000);
+    await freezeAnimations(homePage.page);
+    await homePage.page.waitForTimeout(2_000);
+    await freezeAnimations(homePage.page);
+    await expect(homePage.navbar).toHaveScreenshot('homepage-mobile-navbar.png', { timeout: 30_000 });
   });
 
   test('mobile – hero', async ({ homePage }) => {
