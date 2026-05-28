@@ -35,6 +35,12 @@ export async function freezeAnimations(page: Page): Promise<void> {
       window.cancelAnimationFrame(id);
     }
     window.requestAnimationFrame = () => 0;
+    // Kill Web Animations API animations (element.animate(), Framer Motion, GSAP WAAPI).
+    // These survive CSS overrides and timer clearing — finish() jumps to end state so
+    // the element is fully visible/at rest rather than reset to hidden initial state.
+    document.getAnimations().forEach(anim => {
+      try { anim.finish(); } catch { try { anim.pause(); } catch {} }
+    });
   });
 }
 
