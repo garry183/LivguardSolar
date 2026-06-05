@@ -78,8 +78,8 @@ jobs:
           name: blob-mobile-chrome
           path: blob-report/
 
-  merge-brain:
-    name: "Visual – Merge + Brain"
+  merge-brain-slack:
+    name: "Visual – Merge + Brain + Slack"
     needs: [chromium-desktop, mobile-chrome]
     if: always()
     runs-on: ubuntu-latest
@@ -99,12 +99,15 @@ jobs:
           pattern: blob-*
           merge-multiple: true
           path: blob-report/
-      - name: Merge reports + Brain
+      - name: Merge reports + Brain + Slack
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
         run: |
           set +e
           MERGE_REPORTS=1 npx playwright merge-reports ./blob-report
           MERGE_EXIT=$?
           npx ts-node brain/analyze.ts || echo "[brain] failed, skipping"
+          node scripts/visual-slack-report.js || echo "[slack] failed, skipping"
           exit $MERGE_EXIT
       - uses: actions/upload-artifact@v4
         if: always()
