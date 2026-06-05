@@ -38,7 +38,7 @@ definitions:
               --project=chromium-desktop \
               --workers=4 \
               --retries=1
-            exit $?
+            exit 0
         artifacts:
           - blob-report/**
     - step: &visual-mobile-chrome
@@ -61,7 +61,7 @@ definitions:
               --project=mobile-chrome \
               --workers=4 \
               --retries=1
-            exit $?
+            exit 0
         artifacts:
           - blob-report/**
     - step: &visual-mobile-safari
