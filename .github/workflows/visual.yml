@@ -1,0 +1,115 @@
+name: Visual Regression
+
+on:
+  push:
+    branches: [master]
+  workflow_dispatch:
+
+jobs:
+  chromium-desktop:
+    name: "Visual – chromium-desktop"
+    runs-on: ubuntu-latest
+    container:
+      image: mcr.microsoft.com/playwright:v1.50.0-jammy
+      options: --shm-size=2gb
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: package-lock.json
+      - run: npm ci
+      - run: npx playwright install chromium
+      - name: Run visual tests (chromium-desktop)
+        env:
+          CI: '1'
+          BASE_URL: https://stage.livguardsolar.com/
+          BLOB_FILENAME: chromium-desktop
+        run: |
+          set +e
+          npx playwright test \
+            tests/visual/rooftop-solar.visual.spec.ts \
+            tests/visual/solar-for-home.visual.spec.ts \
+            tests/visual/solar-for-commercial.visual.spec.ts \
+            tests/visual/homepage.visual.spec.ts \
+            --project=chromium-desktop \
+            --workers=4 \
+            --retries=1
+          exit 0
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: blob-chromium-desktop
+          path: blob-report/
+
+  mobile-chrome:
+    name: "Visual – mobile-chrome"
+    runs-on: ubuntu-latest
+    container:
+      image: mcr.microsoft.com/playwright:v1.50.0-jammy
+      options: --shm-size=2gb
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: package-lock.json
+      - run: npm ci
+      - run: npx playwright install chromium
+      - name: Run visual tests (mobile-chrome)
+        env:
+          CI: '1'
+          BASE_URL: https://stage.livguardsolar.com/
+          BLOB_FILENAME: mobile-chrome
+        run: |
+          set +e
+          npx playwright test \
+            tests/visual/rooftop-solar.visual.spec.ts \
+            tests/visual/solar-for-home.visual.spec.ts \
+            tests/visual/solar-for-commercial.visual.spec.ts \
+            tests/visual/homepage.visual.spec.ts \
+            --project=mobile-chrome \
+            --workers=4 \
+            --retries=1
+          exit 0
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: blob-mobile-chrome
+          path: blob-report/
+
+  merge-brain:
+    name: "Visual – Merge + Brain"
+    needs: [chromium-desktop, mobile-chrome]
+    if: always()
+    runs-on: ubuntu-latest
+    container:
+      image: mcr.microsoft.com/playwright:v1.50.0-jammy
+      options: --shm-size=2gb
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: package-lock.json
+      - run: npm ci
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: blob-*
+          merge-multiple: true
+          path: blob-report/
+      - name: Merge reports + Brain
+        run: |
+          set +e
+          MERGE_REPORTS=1 npx playwright merge-reports ./blob-report
+          MERGE_EXIT=$?
+          npx ts-node brain/analyze.ts || echo "[brain] failed, skipping"
+          exit $MERGE_EXIT
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: visual-report
+          path: reports/
