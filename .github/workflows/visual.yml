@@ -104,6 +104,7 @@ jobs:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
         run: |
           set +e
+          mkdir -p reports reports/junit
           MERGE_REPORTS=1 npx playwright merge-reports ./blob-report
           MERGE_EXIT=$?
           npx ts-node brain/analyze.ts || echo "[brain] failed, skipping"
